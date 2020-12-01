@@ -3,6 +3,8 @@ Here we go, yet another toolbox for light simulations in highly scattering media
 
 This is my attempt to build a Monte Carlo simulation toolbox featuring CUDA acceleration on NVIDIA cards, a friendly user interface based on the amazing ImGui project, multilayered tissues, geometry creation on the fly, and export to datatypes readable from different software like Python, MATLAB, etc. through the established h5 standard. The simulations are performed voxel by voxel relying on Code extensively tested on the CPU.
 
+![Main interface of YAMCT](https://hofmannu.org/wp-content/uploads/2020/12/yamct-1024x795.jpg "Main interface")
+
 # Installation
 
 ## Installation of required libraries on Linux
