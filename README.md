@@ -17,11 +17,13 @@ This part is still fully missing since I did not have the time yet to check whic
 *   stuff required for imgui
 *  `cmake` and `make`
 
-Archlinux installation command:
-`pacman -S cuda nvidia hdf5 cmake make`
+Archlinux installation command
+```
+pacman -S cuda nvidia hdf5 cmake make
+```
 
 ## Building and running the program
-Please do not continue here if you are not using Linux. This software is built for Linux machines and requires furthermore CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
+This software is built for Linux machines and requires furthermore CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
 
 ```
 git clone git@github.com:hofmannu/yamct.git
