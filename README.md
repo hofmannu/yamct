@@ -9,7 +9,7 @@ Documentation is lacking for now. Lazy programmers often say that an intuitive u
 
 # Installation
 
-The code was written fro and tested with Linux. Please send me a request if you do not know how to install it on your system and I will provide you with instructions.
+The code was written for and tested with Linux. Please send me a request if you do not know how to install it on your system and I will provide you with instructions.
 
 ## Installation of required libraries on Linux
 
@@ -25,7 +25,7 @@ pacman -S cuda nvidia hdf5 cmake make
 ```
 
 ## Building and running the program
-This software is built for Linux machines and requires furthermore CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
+This software is writtent for Linux and requires furthermore CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
 
 ```
 git clone git@github.com:hofmannu/yamct.git
