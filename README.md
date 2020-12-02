@@ -1,3 +1,5 @@
+Disclaimer: This project is still in the development phase and while basic functionality was tested and validated, many features are still missing and require implementation (see Issue list).
+
 # YAMCT (Yet Another Monte Carlo Toolbox)
 Here we go, yet another toolbox for light simulations in highly scattering media like biological tissues. Completely unnecessary one might think. There are so many out there someone else might mention. Nevertheless, when I started to look for such a toolbox I was highly disappointed by the non-userfriendly versions which people published in the web over the last few years. Either using them is impossible due to a bad user interface or they perform incredibly slow because they are still running on a CPU.
 
@@ -44,3 +46,7 @@ I am actively working on this project. If you want any feature implemented (for 
 # Similar / alternative projects
 *  [OMLC website with examples and explanations](https://omlc.org/software/mc/)
 *  [MCX Extreme](mcx.space)
+
+# Literature
+On the website of [OMLC](https://omlc.org/news/index.html) you can find an extensive list of Literature about light simulation through Monte Carlo simulations as well as optical properties of different tissue types.
+
