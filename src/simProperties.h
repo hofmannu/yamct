@@ -29,6 +29,7 @@ private:
 	uint64_t nPPerThread = 10; // number of photons simulated in each thread
 	uint64_t threadsPerBlock = 512; // threads per block on GPU
 	uint64_t nBlocks; // dependent variable
+	uint8_t gpuID = 0; // id of gpu used
 
 	void calc_threads();
 public:
@@ -36,12 +37,15 @@ public:
 
 	void set_nPhotons(const uint64_t _nPhotons);
 	void set_nPPerThread(const uint64_t _nPPerThread);
+	void set_gpuID(const uint8_t _gpuID);
 
 	uint64_t get_nPhotons() const;
 	uint64_t get_nPPerThread() const;
 	uint64_t get_nPhotonsTrue() const;
 	uint64_t get_threadsPerBlock() const;
 	uint64_t get_nBlocks() const;
+
+	uint8_t get_gpuID() const {return gpuID;};
 
 };
 #endif

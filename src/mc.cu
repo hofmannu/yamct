@@ -247,7 +247,7 @@ __device__ static void scatter(
 
 	quaternion_rot(vel, phi, &b); // rotate b around vel to generate deflection vector	
 	quaternion_rot(&b, sigma, vel); // rotate vel around rotated b by sigma
-	normalize(vel); // normalize vector here to balance inaccuracies
+	// normalize(vel); // normalize vector here to balance inaccuracies
 	return;
 }
 
@@ -363,45 +363,6 @@ __device__ bool sameVoxel(
   return sv;
 }
 
-// push value over to heat matrix
-__device__ void pushToHeat(
-	const vec3& pos, // position of where our absorption event is happening 
-	const float absorb, // amount of absorption event
-	const float weight, // weight of the photon stored in fluence map
-	float* heat, // matrix containing the heat
-	float* fluence,
-	const constArgsIn* inArgs) // constant input arguments for kernel
-{
-	// convert position into index
-	bool inside = 0;
-
-	// calculate index in x, y, z direction
-	const int64_t ix = (pos.x - inArgs->origin[0]) / inArgs->res[0];
-	if ((ix >= 0) && (ix < inArgs->dim[0]))
-	{
-		const int64_t iy = (pos.y - inArgs->origin[1]) / inArgs->res[1];
-		if ((iy >= 0) && (iy < inArgs->dim[1]))
-		{
-			const int64_t iz = (pos.z - inArgs->origin[2]) / inArgs->res[2];
-			if ((iz >= 0) && (iz < inArgs->dim[2]))
-			{
-				// assign absorption event to heat map
-				int64_t idx = ix + inArgs->dim[0] * (iy + iz * inArgs->dim[1]);
-				// heat[idx] += absorb;
-				atomicAdd(&heat[idx], absorb);
-				atomicAdd(&fluence[idx], weight);
-				// we need to use atomic add here to avoid race conditions
-				inside = 1;
-			}
-		}
-	}
-
-	if (inside == 0) // if we are outside, add to contaienr instead
-	 	atomicAdd(&heat[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], absorb);
-
-	return;
-}
-
 // z = z + x * y
 __device__ float atomicFMA(float* address, const float x, const float y)
 {
@@ -421,9 +382,6 @@ __device__ float atomicFMA(float* address, const float x, const float y)
 
   return __float_as_int(old);
 }
-
-// __int_as_float
-// __float_as_int
 
 // push value over to heat matrix
 __device__ void pushToHeatFMA(
@@ -450,10 +408,8 @@ __device__ void pushToHeatFMA(
 			{
 				// assign absorption event to heat map
 				int64_t idx = ix + inArgs->dim[0] * (iy + iz * inArgs->dim[1]);
-				// heat[idx] = heatIdx + weight * scaleH;
-				// fluence[idx] = fluence[idx] + weight * scaleF;
-				atomicFMA(&heat[idx], weight, scaleH);
-				atomicFMA(&fluence[idx], weight, scaleF);
+				atomicFMA(&heat[idx], weight, scaleH);// heat = heat + weight * scaleH
+				atomicFMA(&fluence[idx], weight, scaleF);// fluence = fluence + weight * scaleF
 				inside = 1;
 			}
 		}
@@ -516,7 +472,6 @@ __device__ void move(vec3& pos, const vec3& vel, const float step)
 	pos.x = fmaf(vel.x, step, pos.x); // pos.x += vel.x * step;
 	pos.y = fmaf(vel.y, step, pos.y); // pos.y += vel.y * step;
 	pos.z = fmaf(vel.z, step, pos.z); // pos.z += vel.z * step;
-
 	return;
 }
 
@@ -578,7 +533,7 @@ __global__ void simPhoton
 		float absorb; // amount of weight absorbed in last step
 		bool sv; // flag defining if we move within the same voxel
 			
-		weight = 1;
+		weight = 1.0;
 		launch(pos, vel, cuState, inArgs, fiber);
 		currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 
@@ -639,15 +594,10 @@ __global__ void simPhoton
 					// update optical properties of tissue
 					currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 				}
-
-				// make sure all our threads are synced before we continue into next absorption
-				// __syncthreads();
 									
 				// if kill flag is enabled check if we are out of bounds
 				if (inArgs->killFlag)
-				{
 					weight = checkBoundary(pos, inArgs, weight, heat_dev);
-				}
 			
 			}while((sleft > 0) && (weight > 0)); // iteratively move and absorb in here
 			
@@ -706,6 +656,8 @@ mc::~mc()
 // class constructor
 mc::mc()
 {
+		
+
 	// generate default material 0 as water
 	optProperties water;
 	water.set_mua(0.4); // 1/mm
@@ -1006,7 +958,8 @@ void mc::update_slice_log(const uint8_t iDim, const uint32_t idx)
 
 // initialize all required variables and allocate our memory
 void mc::init_vars()
-{
+{	
+	cudaSetDevice(sim.get_gpuID());
 	cudaError_t err;
 	// alloc memory for heat map and log version of it on CPU
 	if (isHeatAlloc)
@@ -1129,8 +1082,11 @@ void mc::init_vars()
 	return;
 }
 
+// starts the actual simulation
 void mc::run_sim()
 {
+	cudaSetDevice(sim.get_gpuID());
+
 	clock_t begin = clock(); // start stopwatch
 	cudaError_t err; // variable used to handle CUDA errors
 
@@ -1253,6 +1209,8 @@ void mc::run_sim()
 		// printf("[debug] mua = %f, mus = %f, albedo = %f\n", 
 		// 	inArgs.mu_a, inArgs.mu_s, inArgs.albedo);
 	}
+
+
 
 	// start actual simulation
 	printf("Starting actual simulation with %d blocks, each %d threads\n",

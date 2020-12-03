@@ -7,12 +7,31 @@ interface::interface()
 	simprop = sim.get_psim(); // get pointer to simulation properties
 	volume = sim.get_pvolume(); // get pointer to volumetric representation
 	tissueTypes = sim.get_ptissues(); // get pointer to tissue types
+
+	// update information about GPUs
+	ScanGpus();
 }
 
 // class destructor
 interface::~interface()
 {
 
+}
+
+void interface::ScanGpus()
+{
+	// empty vector from old stuff
+
+	// while constructing our interface check how many GPUs are present
+	cudaGetDeviceCount(&deviceCount);
+	deviceNames.clear();
+	for (uint8_t iGPU = 0; iGPU < deviceCount; iGPU++)
+	{
+		cudaDeviceProp deviceProperties;
+	  cudaGetDeviceProperties(&deviceProperties, iGPU);
+	 	deviceNames.push_back(deviceProperties);
+	}
+	return;
 }
 
 // displays a small help marker next to the text
@@ -113,25 +132,47 @@ void interface::InitWindow(int *argcp, char**argv)
 }
 
 
+int getSPcores(cudaDeviceProp devProp)
+{  
+    int cores = 0;
+    int mp = devProp.multiProcessorCount;
+    switch (devProp.major){
+     case 2: // Fermi
+      if (devProp.minor == 1) cores = mp * 48;
+      else cores = mp * 32;
+      break;
+     case 3: // Kepler
+      cores = mp * 192;
+      break;
+     case 5: // Maxwell
+      cores = mp * 128;
+      break;
+     case 6: // Pascal
+      if ((devProp.minor == 1) || (devProp.minor == 2)) cores = mp * 128;
+      else if (devProp.minor == 0) cores = mp * 64;
+      else printf("Unknown device type\n");
+      break;
+     case 7: // Volta and Turing
+      if ((devProp.minor == 0) || (devProp.minor == 5)) cores = mp * 64;
+      else printf("Unknown device type\n");
+      break;
+     case 8: // Ampere
+      if (devProp.minor == 0) cores = mp * 64;
+      else if (devProp.minor == 6) cores = mp * 128;
+      else printf("Unknown device type\n");
+      break;
+     default:
+      printf("Unknown device type\n"); 
+      break;
+      }
+    return cores;
+}
+
 // interfacing for important properties like fiber stuff, field size etc
 void interface::Properties()
 {
-
 	ImGui::Begin("Simulation properties", &show_properties_window);
 	
-	// loading and saving of predefined fiber properties
-	ImGui::Columns(2);
-	if (ImGui::Button("Save"))
-	{
-		// nothing here yet
-	}
-	ImGui::NextColumn();
-	if (ImGui::Button("Load"))
-	{
-		// nothing here yet
-	}
-	ImGui::NextColumn();
-
 	ImGui::Columns(1);
 	
 	ImGui::Separator();
@@ -149,11 +190,51 @@ void interface::Properties()
 
 	ImGui::Checkbox("Kill at boundary", sim.get_pflagKillBound());
 
+	ImGui::Separator();
+
+	ImGui::Columns(4);
+	ImGui::Text("ID"); ImGui::NextColumn();
+	ImGui::Text("Name"); ImGui::NextColumn();
+	ImGui::Text("Cores"); ImGui::NextColumn();
+	ImGui::Text("Ram"); ImGui::NextColumn();
+	for (uint8_t iGPU = 0; iGPU < deviceCount; iGPU++)
+	{
+		cudaDeviceProp currProp = deviceNames[iGPU];
+		ImGui::Text("%d", iGPU); ImGui::NextColumn();
+		ImGui::Text("%s", currProp.name); ImGui::NextColumn();
+		ImGui::Text("%d", getSPcores(currProp)); ImGui::NextColumn();
+		float memGb = ((float) currProp.totalGlobalMem) / 1024.0 / 1024.0 / 1024.0;
+		ImGui::Text("%.1f", memGb); ImGui::NextColumn();
+	}
+	int gpuID = simprop->get_gpuID();
+
+	ImGui::Columns(2);
+	ImGui::InputInt("GPU to use", &gpuID);
+	ImGui::NextColumn();
+	if (ImGui::Button("Rescan"))
+	{
+		ScanGpus();
+	}
+	ImGui::NextColumn();
+
+	simprop->set_gpuID(gpuID);
+
+
 	// check if everything is ready for our simulation
 	uint8_t maxMaterial = volume->get_maxMaterial();
 	uint8_t nMaterials = tissueTypes->size();
 	ImGui::Separator();
 	ImGui::Columns(2);
+
+	// is a valid gpu present
+	ImGui::Text("Is CUDA capable GPU present and selected?");
+	ImGui::NextColumn();
+	bool isGpuOk = (deviceCount > 0) && (simprop->get_gpuID() < deviceCount);
+	if (isGpuOk)
+		ImGui::Text("y");
+	else
+		ImGui::Text("n");
+	ImGui::NextColumn();
 
 	// is our volume generated 
 	ImGui::Text("Is volume generated?");
@@ -176,7 +257,8 @@ void interface::Properties()
 
 	ImGui::Columns(1);
 
-	bool is_all_valid = (is_volume_generated && is_materials_defined);
+	bool is_all_valid = (is_volume_generated && is_materials_defined &&
+		(isGpuOk));
 
 	// if something not ready yet, disable button
 	if (!is_all_valid)

@@ -11,7 +11,9 @@ set(CUDA_SEPARABLE_COMPILATION ON)
 set(CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
+# set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
+set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -Xptxas -v")
+
 
 find_library(H5CPP_LIB hdf5_cpp)
 find_library(H5_LIB hdf5)
@@ -30,7 +32,7 @@ set_property(TARGET SimProperties PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 add_library(MC mc.cu)
 set_property(TARGET MC PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-set_property(TARGET MC PROPERTY CUDA_ARCHITECTURES 35 50)
+set_property(TARGET MC PROPERTY CUDA_ARCHITECTURES 50 75 86)
 target_link_libraries(MC PUBLIC
 	FiberProperties
 	McFieldProperties
@@ -41,7 +43,7 @@ target_link_libraries(MC PUBLIC
 
 add_library(ColorMapper color_mapper.cu)
 set_property(TARGET ColorMapper PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-set_property(TARGET ColorMapper PROPERTY CUDA_ARCHITECTURES 35 50)
+set_property(TARGET ColorMapper PROPERTY CUDA_ARCHITECTURES 50 75 86)
 
 add_library(OptVolume optVolume.cpp)
 set_property(TARGET OptVolume PROPERTY CUDA_SEPARABLE_COMPILATION ON)
@@ -76,7 +78,7 @@ set_property(TARGET Shape PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 add_library(Interface interface.cu)
 set_property(TARGET Interface PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-set_property(TARGET Interface PROPERTY CUDA_ARCHITECTURES 35 50)
+set_property(TARGET Interface PROPERTY CUDA_ARCHITECTURES 50 75 86)
 target_link_libraries(Interface PUBLIC
 	MC
 	FiberProperties

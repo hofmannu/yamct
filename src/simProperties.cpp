@@ -26,6 +26,13 @@ void simProperties::set_nPPerThread(const uint64_t _nPPerThread)
 	return;
 }
 
+// set id of gpu to use
+void simProperties::set_gpuID(const uint8_t _gpuID)
+{
+	gpuID = _gpuID;
+	return;
+}
+
 void simProperties::calc_threads()
 {
 	nBlocks = ceil( (float) nPhotons / ((float) threadsPerBlock * nPPerThread));

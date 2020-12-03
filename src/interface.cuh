@@ -51,6 +51,7 @@ public:
 	~interface();
 
 private:
+	void ScanGpus(); // function updates internal GPU list
 	void MainDisplayCode();
 	void Properties();
 	void Result(); // display result to user
@@ -83,6 +84,9 @@ private:
 
 	bool flagLog = 1;
 	bool flagFluence = 1;
+
+	int deviceCount = 0;
+	vector<cudaDeviceProp> deviceNames;
 
 	mc sim;
 	fiberProperties* arfiber;
