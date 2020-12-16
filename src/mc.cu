@@ -393,11 +393,9 @@ __device__ __inline__ float atomicFMA(float* address, const float x, const float
 __device__ __inline__ void pushToHeatFMA(
 	const vec3& pos, // position of where our absorption event is happening 
 	const float weight, // amount of absorption event
-	const float scaleH, // weight of the photon stored in fluence map
-	const float scaleF, 
+	const float scaleH, // weight of the photon stored in heat map
 	float* heat, // matrix containing the heat
-	float* fluence,
-	const constArgsIn& inArgs) // constant input arguments for kernel
+	const constArgsIn* inArgs) // constant input arguments for kernel
 {
 	// convert position into index
 	bool inside = 0;
@@ -413,9 +411,8 @@ __device__ __inline__ void pushToHeatFMA(
 			if ((iz >= 0) && (iz < inArgs.dim[2]))
 			{
 				// assign absorption event to heat map
-				int64_t idx = ix + inArgs.dim[0] * (iy + iz * inArgs.dim[1]);
-				atomicFMA(&heat[idx], weight, scaleH);// heat = heat + weight * scaleH
-				atomicFMA(&fluence[idx], weight, scaleF);// fluence = fluence + weight * scaleF
+				int64_t idx = ix + inArgs->dim[0] * (iy + iz * inArgs->dim[1]);
+				atomicFMA(&heat[idx], weight, scaleH);
 				inside = 1;
 			}
 		}
@@ -453,17 +450,6 @@ __device__ float findDistFace(
     const float tz = fabs(deltaZ / vel.z);
     
     const float tmin = min3(tx, ty, tz);
-
-    // now we could convert tmin into s by
-    // sx = tmin * vel.x
-    // sy = tmin * vel.y
-    // sz = tmin * vel.z
-
-    // but
-    // sges = sqrt(sx^2 + sy^2 + sz^2) 
-    // 			= tmin * norm(vel)
-    // and norm(vel) == 1
-    // therefore sges = tmin 
 
     return tmin;
 }
@@ -503,10 +489,8 @@ __device__ float checkBoundary(
 // cuda kernel definition
 __global__ void simPhoton
 (
-		float* heat_dev, // output matrix to which we write our absorption
-		float* fluence_dev, 
-		// const float * R_dev, // 1d vector containing reflectance
-		const constArgsIn* inArgsPtr, // constant simulation parameters
+		float * heat_dev, // output matrix to which we write our absorption
+		const constArgsIn* inArgs, // constant simulation parameters
 		const uint8_t* tissueTypes, // vector containing current tissue props
 		const optProps* optProp_dev,
 		const fiberProps* fiber) // struct containing fiber properties
@@ -554,33 +538,20 @@ __global__ void simPhoton
 				sv = sameVoxel(pos, tempPos, inArgs); // check if temporary pos are in same voxel
 				if (sv) // if our photon is in same voxel
 				{ 
-					pos = tempPos;
-					// const float expFact = expf(-currProps.mu_a * s);
-					// const float scaleH = 1.0 - expFact;
-					const float scaleH = -expm1f(-currProps.mu_a * s);
-					const float expFact = 1 - scaleH;
-					// absorb = weight * (1.0 - exp(scaler));	
-					// pushToHeat(pos, absorb, weight * s, heat_dev, fluence_dev, inArgs);
-          // weight -= absorb;	// decrement weight by amount absorbed
-					pushToHeatFMA(pos, weight, scaleH, s, heat_dev, fluence_dev, inArgs);
-					weight = weight * expFact;
+
+					pos = tempPos; // update current position
+					const float scaleH = -expm1f(-currProps.mu_a * s); // 1 - exp(-mua * s)
+					pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
+					weight = weight * (1 - scaleH);
 					sleft = 0; // update sleft
 				}
 				else // photon has crossed voxel boundary
 				{
 					s = ls + findDistFace(pos, inArgs, vel);
-					// printf("findDistFace = %f\n", findDistFace(pos, inArgs, vel));
-					// double scaler = -currProps.mu_a * s;
-					// const float expFact = expf(-currProps.mu_a * s);
-					// const float scaleH = 1.0 - expFact;
 					const float scaleH = -expm1f(-currProps.mu_a * s);
-					const float expFact = 1 - scaleH;
-					pushToHeatFMA(pos, weight, scaleH, s, heat_dev, fluence_dev, inArgs);
-					
-					// absorb = weight * (1.0 - exp(scaler));
-					// pushToHeat(pos, absorb, weight * s, heat_dev, fluence_dev, inArgs);
-					// weight -= absorb; // decrement weight by amount absorbed
-					weight = weight * expFact;
+
+					pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
+					weight = weight * (1 - scaleH);
 
 					// sleft = sleft - s * currProps.mu_s; // update left step (back into unitless)
 					sleft = fmaf(-s, currProps.mu_s, sleft); // fmaf(x, y, z) --> x * y + z
@@ -1037,10 +1008,7 @@ void mc::init_vars()
 
 	// allocate matrix for heat map on GPU
 	if (isHeatDevAlloc)
-	{
 		cudaFree(heat_dev);
-		cudaFree(fluence_dev);
-	}
 
 	// allocate memory on device for absorption map
 	err = cudaMalloc( (void**)&heat_dev, (volume.get_nElem() + 1) * sizeof(float) );
@@ -1054,23 +1022,10 @@ void mc::init_vars()
 		throw "MemoryAllocError";
 	}
 
-	// allocate memory on device for fluence map
-	err = cudaMalloc( (void**)&fluence_dev, volume.get_nElem() * sizeof(float) );
-	if (err != cudaSuccess)
-	{
-		printf("[mc] Could not allocate required memory for fluence on card\n");
-		printf("[mc] Size of requested array: nElements = %d\n", 
-			volume.get_nElem());
-		printf(cudaGetErrorString(err));
-		printf("\n");
-		throw "MemoryAllocError";
-	}
 	isHeatDevAlloc = 1;
 
 	// copy zero vectors over for fluence and heat
-	bool cpy1 = (cudaSuccess != cudaMemcpy(fluence_dev, fluence, 
-		volume.get_nElem() * sizeof(float), cudaMemcpyHostToDevice));
-	cpy1 |= (cudaSuccess != cudaMemcpy(heat_dev, heat, 
+	bool cpy1 = (cudaSuccess != cudaMemcpy(heat_dev, heat, 
 		(volume.get_nElem() + 1) * sizeof(float), cudaMemcpyHostToDevice));
 
 	if (cpy1){
@@ -1107,6 +1062,10 @@ void mc::run_sim()
 	optProps* optPropHost = new optProps[nMaterial];
 	for (uint8_t iMaterial = 0; iMaterial < nMaterial; iMaterial++)
 	{
+		// make sure that there is no zero absorption
+		if (tissues[iMaterial].get_mua() < 1e-5)
+			tissues[iMaterial].set_mua(1e-5);
+
 		optPropHost[iMaterial].mu_a = tissues[iMaterial].get_mua();
 		optPropHost[iMaterial].mu_s = tissues[iMaterial].get_mus();
 		optPropHost[iMaterial].g = tissues[iMaterial].get_g();
@@ -1227,7 +1186,6 @@ void mc::run_sim()
 
 	simPhoton<<<gridSize, blockSize >>>(
 		heat_dev, // output matrix into which we write our absorption
-		fluence_dev,
 		inArgs_dev, // constant simulation parameters
 		tissueTypes_dev, // defines the distribution of our tissue types
 		optProp_dev, // random number 
@@ -1249,17 +1207,7 @@ void mc::run_sim()
 			throw "MemoryCopyError";
 		}
 
-		// copy fluence array back from gpu
-		err = cudaMemcpy(fluence, fluence_dev, 
-			volume.get_nElem() * sizeof(float), cudaMemcpyDeviceToHost);
-		if (err != cudaSuccess)
-		{
-			printf("Could not copy fluence array back from GPU\n");
-			throw "MemoryCopyError";
-		}		
-
 		clock_t end = clock();
-
 	
 		simTime = (end - begin) / (double) CLOCKS_PER_SEC;
 		//printf("Time elapsed in [s]: %f \n", simTime);
@@ -1292,13 +1240,14 @@ void mc::run_sim()
 		printf("[debug] Overall photons found (0 ... 1): %f, nans: %d\n", 
 			photonRatio, nanCount);
 
-
 	// scale heat by volume and nphotons
-	float scalingFac = (float) sim.get_nPhotonsTrue() * volume.get_volume_voxel();
+	const float scalingFac = (float) sim.get_nPhotonsTrue() * volume.get_volume_voxel();
+	uint8_t* volumeData = volume.get_pvolumeData();
 	for (uint32_t iElem = 0; iElem < volume.get_nElem(); iElem++)
 	{
 		heat[iElem] /= scalingFac;
-		fluence[iElem] /= scalingFac;
+		const float muaTemp = tissues[volumeData[iElem]].get_mua();
+		fluence[iElem] = heat[iElem] / muaTemp;
 	}
 	heat[volume.get_nElem()] /= scalingFac;
 

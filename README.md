@@ -15,15 +15,16 @@ The code was written for and tested with Linux. Please send me a request if you 
 
 ## Installation of required libraries on Linux
 
-This part is still fully missing since I did not have the time yet to check which libraries I installed over the last half a year. Things we definetly need are
+Libraries / pacakges required:
 *  `hdf5` general purpose library and file format for storing scientific data
 *  `cuda` and `nvidia` driver (eventually you want to use `nvidia-lts` if you use `linux-lts`)
 *   stuff required for imgui
 *  `cmake` and `make`
+*  `glfw-x11`, `glew` used to display stuff
 
 Archlinux installation command
 ```
-pacman -S cuda nvidia hdf5 cmake make
+pacman -S cuda nvidia hdf5 cmake make glfw-x11 glew
 ```
 
 ## Building and running the program
