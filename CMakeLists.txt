@@ -16,7 +16,7 @@ set(BUILD_SHARED_LIBS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON )
 # set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
-set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -Xptxas -v")
+set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -Xptxas -v -O2")
 
 
 set(

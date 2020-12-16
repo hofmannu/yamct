@@ -20,7 +20,7 @@ __device__ struct vec3
 };
 
 // get conjugate of it
-__device__ static quaternion conjugate(quaternion quat)
+__device__ __inline__ static quaternion conjugate(quaternion quat)
 {
   quat.x = -quat.x;
   quat.y = -quat.y;
@@ -31,7 +31,7 @@ __device__ static quaternion conjugate(quaternion quat)
 
 // multiply two quaternions
 // switched to fmaf for increased float accuracy
-__device__ static quaternion mult(const quaternion& A, const quaternion& B)
+__device__ __inline__ static quaternion mult(const quaternion& A, const quaternion& B)
 {
   quaternion C;
   C.x = -A.z * B.y;
@@ -62,30 +62,30 @@ __device__ static quaternion mult(const quaternion& A, const quaternion& B)
 }
 
 // returns the optical properties for a given position
-__device__ optProps getOptProps(
+__device__ __inline__ static optProps getOptProps(
 	vec3& pos, // requested position as 3 element vector
-	const constArgsIn* inArgs, // constant input arguments to kernel
+	const constArgsIn& inArgs, // constant input arguments to kernel
 	const uint8_t* tissueArray, // array defining tissue properties
 	const optProps* tissues) // optical properties of tissue
 {
 	// get position in grid
 	int32_t posIdx [3];
-	uint8_t tissueId = inArgs->bgMaterial;	
+	uint8_t tissueId = inArgs.bgMaterial;	
 
-	posIdx[0] = (pos.x - inArgs->origin[0]) / inArgs->res[0];
+	posIdx[0] = (pos.x - inArgs.origin[0]) / inArgs.res[0];
 	
 
 	// if we are outside tissue range, simply assign bgMaterial
-	if ((posIdx[0] >= 0) && (posIdx[0] < inArgs->dim[0]))
+	if ((posIdx[0] >= 0) && (posIdx[0] < inArgs.dim[0]))
 	{
-		posIdx[1] = (pos.y - inArgs->origin[1]) / inArgs->res[1];
-		if ((posIdx[1] >= 0) && (posIdx[1] < inArgs->dim[1]))
+		posIdx[1] = (pos.y - inArgs.origin[1]) / inArgs.res[1];
+		if ((posIdx[1] >= 0) && (posIdx[1] < inArgs.dim[1]))
 		{
-			posIdx[2] = (pos.z - inArgs->origin[2]) / inArgs->res[2];
-			if ((posIdx[2] >= 0) && (posIdx[2] < inArgs->dim[2]))
+			posIdx[2] = (pos.z - inArgs.origin[2]) / inArgs.res[2];
+			if ((posIdx[2] >= 0) && (posIdx[2] < inArgs.dim[2]))
 			{
-				const uint32_t iTissue = posIdx[0] + inArgs->dim[0] * 
-					(posIdx[1] + inArgs->dim[1] * posIdx[2]);
+				const uint32_t iTissue = posIdx[0] + inArgs.dim[0] * 
+					(posIdx[1] + inArgs.dim[1] * posIdx[2]);
 				// get index of tissue
 				tissueId = tissueArray[iTissue];
 			}
@@ -97,7 +97,7 @@ __device__ optProps getOptProps(
 }
 
 // perform a quaternion based rotation of our photon
-__device__ static void quaternion_rot(
+__device__ __inline__ static void quaternion_rot(
 		const vec3* rot, // vector around which we rotate
 		const float alpha, // rotation angle
 		vec3* dir // direction to rotate
@@ -106,14 +106,14 @@ __device__ static void quaternion_rot(
 
 	quaternion temp, quat_view, result;
 
-	const double alpha2 = __fdividef(alpha, 2.0);
-	const double sinalpha2 = __sinf(alpha2);
+	const float alpha2 = __fdividef(alpha, 2.0);
+	const float sinalpha2 = __sinf(alpha2);
 
 	// this vector is already by its definition 1 if rx, ry, rz has length 1 as well
 	temp.x = rot->x * sinalpha2;
 	temp.y = rot->y * sinalpha2;
 	temp.z = rot->z * sinalpha2;
-	temp.w = cos(alpha2);
+	temp.w = cosf(alpha2);
 
 	// feed current position to first quaternion, already normalized as well
 	quat_view.x = dir->x;
@@ -133,7 +133,7 @@ __device__ static void quaternion_rot(
 /*
 	returns random angle required for scattering of photon into a new direction
 */
-__device__ static float getsigma(
+__device__  __inline__ static float getsigma(
 	const float& g, // anisotropy coefficient
 	const float& gx2, // anisotropy coefficient times two
 	const float& g2, // anisotropy coefficient power two
@@ -160,14 +160,15 @@ __device__ static float getsigma(
 	return sigma;
 }
 
-__device__ void normalize(vec3* vector)
+// normalize our velocity vector if it really got out of boounds
+__device__  __inline__ static void normalize(vec3* vector)
 {
 	// const float normVal = rnorm3df(vector->x, vector->y, vector->z);
 	float normVal = fmaf(vector->z, vector->z, fmaf(vector->y, vector->y, vector->x* vector->x));
-	normVal = sqrtf(normVal);
 
 	if ((normVal < 0.95) || (normVal > 1.05))
 	{
+		normVal = sqrtf(normVal);
 		printf("velocity is off by a lot: %f!\n", normVal);
 		if (normVal == 0)
 		{
@@ -185,10 +186,9 @@ __device__ void normalize(vec3* vector)
 }
 
 // implemented fmaf for increased accuracy
-__device__ static void scatter(
+__device__  __inline__ static void scatter(
 	vec3* vel, // most recent directory
 	curandState& state, // random number generator
-	const constArgsIn* inArgs,
 	const optProps tissueProps) // properties of tissue we are currently in
 {
 
@@ -197,11 +197,6 @@ __device__ static void scatter(
 		tissueProps.g, tissueProps.gx2, tissueProps.g2, state);
 	const float phi = __fmul_rn(__fmul_rn(2.0, M_PI), curand_uniform(&state));
 	vec3 b;
-	// printf("sigma = %f, phi = %f \n", sigma, phi);
-	// printf("sigma = %f, phi = %f \n", sigma, phi);
-
-	if (rnorm3df(vel->x, vel->y, vel->z) == 0)
-		printf(" Velocity vector is already 0!\n");
 
 	if ((fabs(vel->x) >= fabs(vel->y)) && (fabs(vel->x) >= fabs(vel->z))){
 		// photon is mostly moving in x, so rectangular vector lies in y z plane
@@ -236,23 +231,15 @@ __device__ static void scatter(
 		b.y = b.x;
 		b.z = -__fmul_rn(__fdividef(b.x, vel->z), (vel->x + vel->y));
 	}
-	else
-	{
-		printf("No rotation happening at all?!\n");
-		b.x = 0; b.y = 1; b.z = 0;
-	}
-
-	if (rnorm3df(b.x, b.y, b.z) == 0)
-		printf("I cannnot rotate around a 0 vector dude!\n");
 
 	quaternion_rot(vel, phi, &b); // rotate b around vel to generate deflection vector	
 	quaternion_rot(&b, sigma, vel); // rotate vel around rotated b by sigma
-	// normalize(vel); // normalize vector here to balance inaccuracies
+	normalize(vel); // normalize vector here to balance inaccuracies
 	return;
 }
 
 // function returning sign of float
-__device__ float sign(const float number)
+__device__  __inline__ static float sign(const float number)
 {
 	const float val = (number < 0) ? -1 : 1;
 	return val;
@@ -261,15 +248,14 @@ __device__ float sign(const float number)
 /*
 	launch a new photon from the fiber tip into our space
 	updated to 3D version already
-	launch(weight, pos, vel, states[tid], inArgs, fiber, tissueTypes);
+	launch(weight, pos, vel, states[tid], fiber, tissueTypes);
 
 	implemented fmaf for icnreased accuracy
 */
-__device__ static void launch(
+__device__  __inline__ static void launch(
 	vec3& pos, // position of photon in [x, y, z] in [m]
 	vec3& vel, // directory of movement in [x, y, z]
 	curandState& state, // random number generator
-	const constArgsIn* inArgs,
 	const fiberProps* fiber)
 {
 
@@ -292,8 +278,9 @@ __device__ static void launch(
     rUnit = fmaf(dirY, dirY, dirZ * dirZ);
   }while(rUnit > 1);
    
-  vel.y = dirY * sin(fiber->phiMax);
-  vel.z = dirZ * sin(fiber->phiMax);
+  const float sinPhiMax = sinf(fiber->phiMax);
+  vel.y = dirY * sinPhiMax;
+  vel.z = dirZ * sinPhiMax;
     
   rUnit = fmaf(vel.y, vel.y, vel.z * vel.z); // rUint = y * y + z * z
   vel.x = sqrtf(1 - rUnit);
@@ -316,14 +303,14 @@ __device__ static void launch(
 }
 
 // return the minimum of two values
-__device__ float min2(const float a, const float b) 
+__device__  __inline__ static float min2(const float a, const float b) 
 {
 	const float m = (a >= b) ? a : b;
 	return m;
 }
 
 // return the minnimum of two values
-__device__ float min3(const float a, const float b, const float c)
+__device__  __inline__ static float min3(const float a, const float b, const float c)
 {
 	float m;
 	if (a <=  min2(b, c))
@@ -339,20 +326,20 @@ __device__ float min3(const float a, const float b, const float c)
 __device__ bool sameVoxel(
 	const vec3& posA, 
 	const vec3& posB, 
-	const constArgsIn* inArgs)
+	const constArgsIn& inArgs)
 {
 	
 	bool sv = 0; // initially we are pessimistic (not same voxel)
-  const int32_t idxAX = posA.x / inArgs->res[0];
-  const int32_t idxBX = posB.x / inArgs->res[0];
+  const int32_t idxAX = posA.x / inArgs.res[0];
+  const int32_t idxBX = posB.x / inArgs.res[0];
   if (idxAX == idxBX)
   {
-  	const int32_t idxAY = posA.y / inArgs->res[1];
-  	const int32_t idxBY = posB.y / inArgs->res[1];
+  	const int32_t idxAY = posA.y / inArgs.res[1];
+  	const int32_t idxBY = posB.y / inArgs.res[1];
   	if (idxAY == idxBY)
   	{
-  		const int32_t idxAZ = posA.z / inArgs->res[2];
-  		const int32_t idxBZ = posB.z / inArgs->res[2];
+  		const int32_t idxAZ = posA.z / inArgs.res[2];
+  		const int32_t idxBZ = posB.z / inArgs.res[2];
   		if (idxAZ == idxBZ)
   		{
   			sv = 1; // only if all three inidices are the same we continue
@@ -364,7 +351,7 @@ __device__ bool sameVoxel(
 }
 
 // z = z + x * y
-__device__ float atomicFMA(float* address, const float x, const float y)
+__device__ __inline__ float atomicFMA(float* address, const float x, const float y)
 {
   int *address_as_ull = (int*) address;
 	int old = *address_as_ull;
@@ -383,31 +370,50 @@ __device__ float atomicFMA(float* address, const float x, const float y)
   return __float_as_int(old);
 }
 
+// __device__ __inline__ double atomicFMA(double* address, const double x, const double y)
+// {
+//   unsigned long long int *address_as_ull = (unsigned long long int*) address;
+// 	unsigned long long int old = *address_as_ull;
+// 	unsigned long long int assumed;
+
+// 	do{
+// 		assumed = old;
+// 	  old = atomicCAS(
+// 	  	address_as_ull, 
+// 	  	assumed,
+// 	  	__double_as_longlong(fma(x, y, __longlong_as_double(assumed))));
+
+//     // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
+//   } while (assumed != old);
+
+//   return __double_as_longlong(old);
+// }
+
 // push value over to heat matrix
-__device__ void pushToHeatFMA(
+__device__ __inline__ void pushToHeatFMA(
 	const vec3& pos, // position of where our absorption event is happening 
 	const float weight, // amount of absorption event
 	const float scaleH, // weight of the photon stored in fluence map
 	const float scaleF, 
 	float* heat, // matrix containing the heat
 	float* fluence,
-	const constArgsIn* inArgs) // constant input arguments for kernel
+	const constArgsIn& inArgs) // constant input arguments for kernel
 {
 	// convert position into index
 	bool inside = 0;
 
 	// calculate index in x, y, z direction
-	const int64_t ix = (pos.x - inArgs->origin[0]) / inArgs->res[0];
-	if ((ix >= 0) && (ix < inArgs->dim[0]))
+	const int64_t ix = (pos.x - inArgs.origin[0]) / inArgs.res[0];
+	if ((ix >= 0) && (ix < inArgs.dim[0]))
 	{
-		const int64_t iy = (pos.y - inArgs->origin[1]) / inArgs->res[1];
-		if ((iy >= 0) && (iy < inArgs->dim[1]))
+		const int64_t iy = (pos.y - inArgs.origin[1]) / inArgs.res[1];
+		if ((iy >= 0) && (iy < inArgs.dim[1]))
 		{
-			const int64_t iz = (pos.z - inArgs->origin[2]) / inArgs->res[2];
-			if ((iz >= 0) && (iz < inArgs->dim[2]))
+			const int64_t iz = (pos.z - inArgs.origin[2]) / inArgs.res[2];
+			if ((iz >= 0) && (iz < inArgs.dim[2]))
 			{
 				// assign absorption event to heat map
-				int64_t idx = ix + inArgs->dim[0] * (iy + iz * inArgs->dim[1]);
+				int64_t idx = ix + inArgs.dim[0] * (iy + iz * inArgs.dim[1]);
 				atomicFMA(&heat[idx], weight, scaleH);// heat = heat + weight * scaleH
 				atomicFMA(&fluence[idx], weight, scaleF);// fluence = fluence + weight * scaleF
 				inside = 1;
@@ -415,9 +421,8 @@ __device__ void pushToHeatFMA(
 		}
 	}
 
-	if (inside == 0) // if we are outside, add to contaienr instead
-	 	atomicFMA(&heat[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], weight, scaleH);
-		// atomicFMA(&heat[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], weight, scaleH);
+	if (inside == 0) // if we are outside, add to container bin instead
+	 	atomicFMA(&heat[inArgs.dim[0] * inArgs.dim[1] * inArgs.dim[2]], weight, scaleH);
 
 	return;
 }
@@ -428,23 +433,20 @@ __device__ void pushToHeatFMA(
 */
 __device__ float findDistFace(
 	const vec3& posA, 
-	const constArgsIn* inArgs,
+	const constArgsIn& inArgs,
 	const vec3& vel)
 {	
-    const int ix1 = floor(posA.x / inArgs->res[0]);
-    const int iy1 = floor(posA.y / inArgs->res[1]);
-    const int iz1 = floor(posA.z / inArgs->res[2]);
+    const int ix1 = floor(posA.x / inArgs.res[0]);
+    const int iy1 = floor(posA.y / inArgs.res[1]);
+    const int iz1 = floor(posA.z / inArgs.res[2]);
     
     const int ix2 = (vel.x >= 0) ? (ix1 + 1) : (ix1);
     const int iy2 = (vel.y >= 0) ? (iy1 + 1) : (iy1);
     const int iz2 = (vel.z >= 0) ? (iz1 + 1) : (iz1);
     
-  	// const float deltaX = ((float) ix2) * inArgs->res[0] - posA.x;
-  	// const float deltaY = ((float) iy2) * inArgs->res[1] - posA.y;
-		// const float deltaZ = ((float) iz2) * inArgs->res[2] - posA.z;
-		const float deltaX = fmaf((float) ix2, inArgs->res[0], -posA.x);
-		const float deltaY = fmaf((float) iy2, inArgs->res[1], -posA.y);
-		const float deltaZ = fmaf((float) iz2, inArgs->res[2], -posA.z);		
+  	const float deltaX = fmaf((float) ix2, inArgs.res[0], -posA.x);
+		const float deltaY = fmaf((float) iy2, inArgs.res[1], -posA.y);
+		const float deltaZ = fmaf((float) iz2, inArgs.res[2], -posA.z);		
 
     const float tx = fabs(deltaX / vel.x);
     const float ty = fabs(deltaY / vel.y);
@@ -479,17 +481,17 @@ __device__ void move(vec3& pos, const vec3& vel, const float step)
 // kills it if this is the case
 __device__ float checkBoundary(
 	const vec3& pos, // current position of photon 
-	const constArgsIn* inArgs, // constant input arguments
+	const constArgsIn& inArgs, // constant input arguments
 	float weight, // weight of photon
 	float* heat_dev)
 {
-	if ((pos.x < inArgs->origin[0]) || (pos.x > inArgs->maxPos[0]))
+	if ((pos.x < inArgs.origin[0]) || (pos.x > inArgs.maxPos[0]))
 	{
-		if ((pos.y < inArgs->origin[1]) || (pos.y > inArgs->maxPos[1]))
+		if ((pos.y < inArgs.origin[1]) || (pos.y > inArgs.maxPos[1]))
 		{
-			if ((pos.z < inArgs->origin[2]) || (pos.z > inArgs->maxPos[2]))
+			if ((pos.z < inArgs.origin[2]) || (pos.z > inArgs.maxPos[2]))
 			{				
-				atomicAdd(&heat_dev[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], weight);
+				// atomicAdd(&heat_dev[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], weight);
 				weight = 0;
 			}
 		}
@@ -501,25 +503,26 @@ __device__ float checkBoundary(
 // cuda kernel definition
 __global__ void simPhoton
 (
-		float * heat_dev, // output matrix to which we write our absorption
+		float* heat_dev, // output matrix to which we write our absorption
 		float* fluence_dev, 
 		// const float * R_dev, // 1d vector containing reflectance
-		const constArgsIn* inArgs, // constant simulation parameters
+		const constArgsIn* inArgsPtr, // constant simulation parameters
 		const uint8_t* tissueTypes, // vector containing current tissue props
 		const optProps* optProp_dev,
 		const fiberProps* fiber) // struct containing fiber properties
 {
+	const constArgsIn inArgs = inArgsPtr[0];
+
 	// temp variables for scattering
 	const unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x; 
-	const float ls = 1e-4;// minimum travel distance [mm}
+	const float ls = 1e-3;// minimum travel distance [mm}
 	float weight; // ranges from 0 to 1 representing the weight of ph
-	
-	// generate and initialize random number generator 
-	curandState cuState;
-	curand_init(tid, 0, 0, &cuState); // Initialize CURAND
+		
+	curandState cuState; // generate and initialize random number generator 
+	curand_init(tid, 0, 0, &cuState); // Initialize CURAND for this thread
 	
 	#pragma unroll	
-	for (uint64_t iPhoton = 0; iPhoton < inArgs->nPPerThread; iPhoton++)
+	for (uint64_t iPhoton = 0; iPhoton < inArgs.nPPerThread; iPhoton++)
 	{	
 		// generate starting position
 		vec3 pos; // position of photon [m]
@@ -530,11 +533,10 @@ __global__ void simPhoton
 		float s; // actual distance traveled by photon [mm]
 		float sleft; // unitless hop distance
 		// to get from unitless to unitfull hop distance: s_uint = s_unitless / mus
-		float absorb; // amount of weight absorbed in last step
 		bool sv; // flag defining if we move within the same voxel
 			
 		weight = 1.0;
-		launch(pos, vel, cuState, inArgs, fiber);
+		launch(pos, vel, cuState, fiber);
 		currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 
 		// here starts the intense loop where calculation speed is critical	
@@ -543,7 +545,6 @@ __global__ void simPhoton
 			sleft = -__logf(curand_uniform(&cuState));
 			do
 			{
-
 				s = sleft / currProps.mu_s;
 
 				// get position estimate if we would be moving within the same material
@@ -558,11 +559,10 @@ __global__ void simPhoton
 					// const float scaleH = 1.0 - expFact;
 					const float scaleH = -expm1f(-currProps.mu_a * s);
 					const float expFact = 1 - scaleH;
-					const float scaleF = s;
 					// absorb = weight * (1.0 - exp(scaler));	
 					// pushToHeat(pos, absorb, weight * s, heat_dev, fluence_dev, inArgs);
           // weight -= absorb;	// decrement weight by amount absorbed
-					pushToHeatFMA(pos, weight, scaleH, scaleF, heat_dev, fluence_dev, inArgs);
+					pushToHeatFMA(pos, weight, scaleH, s, heat_dev, fluence_dev, inArgs);
 					weight = weight * expFact;
 					sleft = 0; // update sleft
 				}
@@ -575,8 +575,7 @@ __global__ void simPhoton
 					// const float scaleH = 1.0 - expFact;
 					const float scaleH = -expm1f(-currProps.mu_a * s);
 					const float expFact = 1 - scaleH;
-					const float scaleF = s;
-					pushToHeatFMA(pos, weight, scaleH, scaleF, heat_dev, fluence_dev, inArgs);
+					pushToHeatFMA(pos, weight, scaleH, s, heat_dev, fluence_dev, inArgs);
 					
 					// absorb = weight * (1.0 - exp(scaler));
 					// pushToHeat(pos, absorb, weight * s, heat_dev, fluence_dev, inArgs);
@@ -596,12 +595,12 @@ __global__ void simPhoton
 				}
 									
 				// if kill flag is enabled check if we are out of bounds
-				if (inArgs->killFlag)
+				if (inArgs.killFlag)
 					weight = checkBoundary(pos, inArgs, weight, heat_dev);
 			
 			}while((sleft > 0) && (weight > 0)); // iteratively move and absorb in here
 			
-			scatter(&vel, cuState, inArgs, currProps); // scatter photon if required
+			scatter(&vel, cuState, currProps); // scatter photon if required
 			// alterantive implementation as scatterLW (contains steps)
 
 			// play roulette with photon
@@ -972,7 +971,7 @@ void mc::init_vars()
 		{
 			delete[] slice[iDim];
 			delete[] sliceLog[iDim];
-			delete[] vecs[iDim];
+			delete[] vecs[iDim];	
 			delete[] plotHeat[iDim];
 			delete[] plotHeatLog[iDim];
 			delete[] plotFluence[iDim];
@@ -1198,24 +1197,35 @@ void mc::run_sim()
 		throw "cudaMemcpyErr";
 	}
 
- 	// print out some important information about the simulation if debugging mode
-	if (flagDebug)
-	{
-		printf("[debug] Field dimensions: nx = %d, ny = %d, nz = %d\n", 
-			inArgs.dim[0], inArgs.dim[1], inArgs.dim[2]);
-		printf("[debug] Number of blocks: %d, number of threads per block%d\n", 
-			sim.get_nBlocks(), sim.get_threadsPerBlock());
-		printf("[debug] Number of photons per thread: %d", inArgs.nPPerThread);
-		// printf("[debug] mua = %f, mus = %f, albedo = %f\n", 
-		// 	inArgs.mu_a, inArgs.mu_s, inArgs.albedo);
-	}
+ 	// check occupancy before starting
 
+  // These variables are used to convert occupancy to warps
+  // cudaDeviceProp prop;
+  // cudaGetDeviceProperties(&prop, sim.get_gpuID());
+    
+  // cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+  // 	&numBlocks,
+  //   simPhoton,
+  //   sim.get_threadsPerBlock(),
+  //   0);
 
+  int blockSize;      // The launch configurator returned block size
+  int minGridSize;    // The minimum grid size needed to achieve the
+          
+  cudaOccupancyMaxPotentialBlockSize(
+      &minGridSize,
+      &blockSize,
+      (void*) simPhoton,
+      0,
+      sim.get_nPhotonsTrue() / sim.get_nPPerThread());
+
+  int gridSize = ((sim.get_nPhotonsTrue() / sim.get_nPPerThread()) + blockSize - 1) / blockSize;
 
 	// start actual simulation
 	printf("Starting actual simulation with %d blocks, each %d threads\n",
-		sim.get_nBlocks(), sim.get_threadsPerBlock());
-	simPhoton<<<sim.get_nBlocks(), sim.get_threadsPerBlock() >>>(
+		gridSize, blockSize);
+
+	simPhoton<<<gridSize, blockSize >>>(
 		heat_dev, // output matrix into which we write our absorption
 		fluence_dev,
 		inArgs_dev, // constant simulation parameters
@@ -1416,6 +1426,8 @@ bool mc::exportVtk(const string filePath)
 		myWriter.set_outputPath(filePath);
 
 		griddedData myData;
+
+		// todo needs fixing here
 		myData.data = heat;
 
 		for (uint8_t iDim = 0; iDim < 3; iDim++)

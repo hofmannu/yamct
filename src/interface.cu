@@ -258,7 +258,7 @@ void interface::Properties()
 	ImGui::Columns(1);
 
 	bool is_all_valid = (is_volume_generated && is_materials_defined &&
-		(isGpuOk));
+		isGpuOk);
 
 	// if something not ready yet, disable button
 	if (!is_all_valid)
@@ -322,7 +322,7 @@ void interface::Illumination()
 
 // c implementation of matlabs imagesc
 void interface::ImImagesc(
-	const float* data, const uint64_t sizex, const uint64_t sizey, 
+	const double* data, const uint64_t sizex, const uint64_t sizey, 
 	GLuint* out_texture, const color_mapper myCMap)
 {
 	
@@ -350,6 +350,35 @@ void interface::ImImagesc(
 	return;
 }
 
+
+void interface::ImImagesc(
+	const float* data, const uint64_t sizex, const uint64_t sizey, 
+	GLuint* out_texture, const color_mapper myCMap)
+{
+	
+	glDeleteTextures(1, out_texture);
+
+	// Create an OpenGL texture identifier
+	GLuint image_texture;
+	glGenTextures(1, &image_texture);
+	glBindTexture(GL_TEXTURE_2D, image_texture);
+
+	// setup filtering parameters for display
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			
+	// use color transfer function to convert from float to rgba
+	unsigned char* data_conv = new unsigned char[4 * sizex * sizey];
+	myCMap.convert_to_map(data, sizex * sizey, data_conv);
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sizex, sizey, 0, GL_RGBA, GL_UNSIGNED_BYTE, 
+		data_conv);
+
+	// give pointer back to main program
+	*out_texture = image_texture;
+	delete[] data_conv; // free memory for temporary array
+	return;
+}
 // allows user to define tissue types with different optical properties
 void interface::TissueProperties()
 {
@@ -517,7 +546,7 @@ void interface::FieldGenerator()
 
 	ImGui::Columns(1);
 
-	// generate volumetrix representation
+	// generate volumetric representation
 	if (ImGui::Button("Generate volume"))
 	{
 		// allocate memory for volume here
@@ -688,8 +717,12 @@ void interface::Result()
 		// // plot axial crossection
 		ImGui::PlotConfig conf;
 		float* plotVec = sim.get_plot(0, &posXYZ[0], flagLog, flagFluence);
+		float* plotVecF = new float [sim.get_dim(0)];
+		for (uint32_t iElement = 0; iElement < sim.get_dim(0); iElement++)
+			plotVecF[iElement] = (float) plotVec[iElement];
+
 		conf.values.xs = sim.get_pvec(0); // this line is optional
-		conf.values.ys = plotVec;
+		conf.values.ys = plotVecF;
 		conf.values.count = sim.get_dim(0);
 		
 		// run through vector to get min and max in y scale
@@ -713,6 +746,8 @@ void interface::Result()
 		conf.frame_size = ImVec2(width, 200);
 		conf.line_thickness = 2.f;
 		ImGui::Plot("plot", conf);
+
+		delete[] plotVecF;
 
 	}
 	// // plot radial crossection

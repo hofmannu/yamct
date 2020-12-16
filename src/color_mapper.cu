@@ -74,9 +74,75 @@ void color_mapper::convert_to_rgba(
 	return;
 }
 
+void color_mapper::convert_to_rgba(
+	const double* dataIn,
+	const uint64_t nElem,
+	unsigned char* dataOut) const
+{
+	
+	float spanTemp = maxVal - minVal;
+	float spanColTemp[4];
+	for (unsigned int iCol = 0; iCol < 4; iCol++)
+		spanColTemp[iCol] = maxCol[iCol] - minCol[iCol];
+
+	// scale whole array to range from to 0 to 1
+	float temp;
+	for (uint64_t iElem = 0; iElem < nElem; iElem++){
+		temp = (dataIn[iElem] - minVal) / spanTemp; // scale to [0 ... 1]
+		
+		// limit temp to 0 ... 1
+		if (temp < 0)
+			temp = 0;
+		else if (temp > 1)
+			temp = 1;
+
+		#pragma unroll
+		for (unsigned char iCol = 0; iCol < 4; iCol++)
+			dataOut[iCol + iElem * 4] = 
+				(minCol[iCol] + temp * spanColTemp[iCol]) * 255;
+	}
+
+	return;
+}
+
 // make diverging colormap centered around 0 or 1
 void color_mapper::convert_to_divmap(
 	const float* dataIn,
+	const uint64_t nElem,
+	unsigned char* dataOut
+	) const
+{
+	// scale whole array to range from to 0 to 1
+	float temp;
+	for (uint64_t iElem = 0; iElem < nElem; iElem++){
+		temp = abs(dataIn[iElem]) / maxAbsVal; // scale to [0 ... 1]
+		if (temp > 1)
+			temp = 1;
+
+		if (dataIn[iElem] < 0)
+		{
+			#pragma unroll
+			for (unsigned char iCol = 0; iCol < 4; iCol++)
+			{
+				dataOut[iCol + iElem * 4] = (1 - temp * minCol[iCol]) * 255;
+			}
+
+		}
+		else
+		{
+			#pragma unroll
+			for (unsigned char iCol = 0; iCol < 4; iCol++)
+				dataOut[iCol + iElem * 4] = (1 - temp * maxCol[iCol]) * 255;
+		}
+		dataOut[4] = 255;
+		
+	}
+	return;
+}
+
+// make diverging colormap centered around 0 or 1
+void color_mapper::convert_to_divmap(
+	const double* dataIn,
 	const uint64_t nElem,
 	unsigned char* dataOut
 	) const
@@ -124,6 +190,23 @@ void color_mapper::convert_to_map(
 	}
 	return;
 }
+
+void color_mapper::convert_to_map(
+	const double* dataIn,
+	const uint64_t nElem,
+	unsigned char* dataOut) const
+{
+	if (mapType == 0)
+		convert_to_rgba(dataIn, nElem, dataOut);
+	else if (mapType == 1)
+	{
+		convert_to_divmap(dataIn, nElem, dataOut);
+		// set default colors for diverging map
+
+	}
+	return;
+}
+
 
 void color_mapper::set_mapType(const uint8_t _mapType)
 {

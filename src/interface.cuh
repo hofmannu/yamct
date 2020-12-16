@@ -62,6 +62,10 @@ private:
 	const float* data, const uint64_t sizex, const uint64_t sizey, 
 	GLuint* out_texture, const color_mapper myCMap);
 
+	void ImImagesc(
+	const double* data, const uint64_t sizex, const uint64_t sizey, 
+	GLuint* out_texture, const color_mapper myCMap);
+
 	const char* windowTitle = "Fluence GUI";
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.10f);
 	ImVec4 clear_color = ImVec4(0.60f, 0.55f, 0.45f, 0.10f);

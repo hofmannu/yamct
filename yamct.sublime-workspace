@@ -1,0 +1,761 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"minFluen",
+				"minFluenceLog"
+			],
+			[
+				"sliceFluence",
+				"sliceFluenceLog"
+			],
+			[
+				"currSlice",
+				"currSliceFluence"
+			],
+			[
+				"currS",
+				"currSliceFluence"
+			],
+			[
+				"atomi",
+				"atomicAdd"
+			],
+			[
+				"fluence",
+				"fluence_dev"
+			],
+			[
+				"fluence_",
+				"fluence_log"
+			],
+			[
+				"curand",
+				"curand_uniform"
+			],
+			[
+				"new",
+				"newTube"
+			],
+			[
+				"uint",
+				"uint32_t"
+			],
+			[
+				"const",
+				"constArgsIn"
+			],
+			[
+				"get_max",
+				"get_maxMaterial"
+			],
+			[
+				"tissue",
+				"tissueProps"
+			],
+			[
+				"abso",
+				"absorbed"
+			],
+			[
+				"fileP",
+				"filePathString"
+			],
+			[
+				"ui",
+				"uint32_t"
+			],
+			[
+				"update",
+				"update_plot"
+			],
+			[
+				"tissu",
+				"tissueTypes"
+			],
+			[
+				"optProp",
+				"optPropHost"
+			],
+			[
+				"optPro",
+				"optPropHost"
+			],
+			[
+				"tiss",
+				"tissue"
+			],
+			[
+				"optPr",
+				"optPropHost"
+			],
+			[
+				"opt",
+				"optProps"
+			],
+			[
+				"maxVal",
+				"maxValLog"
+			],
+			[
+				"Input",
+				"InputFloat3"
+			],
+			[
+				"is",
+				"is_volume_generated"
+			],
+			[
+				"bgMater",
+				"bgMaterialId"
+			],
+			[
+				"lower",
+				"lowerCorner"
+			],
+			[
+				"tisseu",
+				"tissueTypes"
+			],
+			[
+				"flag",
+				"flagVerbose"
+			],
+			[
+				"sens",
+				"sensField"
+			],
+			[
+				"crop",
+				"cropZStart"
+			],
+			[
+				"fie",
+				"field_height"
+			],
+			[
+				"field",
+				"field_width"
+			],
+			[
+				"iput",
+				"inputMatrixA"
+			],
+			[
+				"inptu",
+				"inputMatrixB"
+			],
+			[
+				"inpt",
+				"inputMatrixA"
+			],
+			[
+				"matrix",
+				"matrixB_dev"
+			],
+			[
+				"fla",
+				"float4kernel"
+			],
+			[
+				"simProp",
+				"simProperties"
+			],
+			[
+				"fiber",
+				"fiberProperties"
+			],
+			[
+				"target_lin",
+				"target_link_libraries\tbuiltin"
+			],
+			[
+				"heat_",
+				"heat_log"
+			],
+			[
+				"target",
+				"target_link_libraries\tcommand"
+			],
+			[
+				"add",
+				"add_library\tcommand"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/mc.cuh",
+			"settings":
+			{
+				"buffer_size": 6506,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/interface.cuh",
+			"settings":
+			{
+				"buffer_size": 2719,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/color_mapper.cuh",
+			"settings":
+			{
+				"buffer_size": 1827,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/structArgsIn.h",
+			"settings":
+			{
+				"buffer_size": 1578,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/mc.cu",
+			"settings":
+			{
+				"buffer_size": 42238,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/interface.cu",
+			"settings":
+			{
+				"buffer_size": 23600,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/color_mapper.cu",
+			"settings":
+			{
+				"buffer_size": 4654,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"packa",
+				"Package Control: Remove Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/hofmannu/Code/yamct",
+		"/home/hofmannu/Code/yamct/src"
+	],
+	"file_history":
+	[
+		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/Plot_Result.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/VPrintf.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/Interpolate_Model.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/check_asym/build_data.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/check_asym/untitled",
+		"/home/hofmannu/Code/mcxyz/mcxyz_22july2019/mcxyz.c",
+		"/home/hofmannu/Code/arillumination/GUI/src/interface.cu",
+		"/home/hofmannu/Code/arillumination/GUI/src/CMakeLists.txt",
+		"/home/hofmannu/Code/arillumination/GUI/src/interface.cuh",
+		"/home/hofmannu/Code/arillumination/GUI/src/mc.cu",
+		"/home/hofmannu/Code/arillumination/GUI/src/optProperties.cpp",
+		"/home/hofmannu/Code/arillumination/todo.txt",
+		"/home/hofmannu/Code/arillumination/GUI/src/optVolume.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/optProperties.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/tube.h",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/CMakeLists.txt",
+		"/home/hofmannu/Code/arillumination/GUI/src/mc.cuh",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/volume.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/structArgsIn.h",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/volume.h",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/interface.cu",
+		"/home/hofmannu/Code/arillumination/GUI/src/tube.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/shell.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/optVolume.cpp",
+		"/home/hofmannu/Code/arillumination/alternatives/small_mc.c",
+		"/home/hofmannu/Code/arillumination/GUI/src/volume.h",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/simulation.cu",
+		"/home/hofmannu/Code/arillumination/GUI/src/shape.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/fiberProperties.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/lib/imgui/docs/CHANGELOG.txt",
+		"/home/hofmannu/Code/arillumination/arillumination.sublime-project",
+		"/home/hofmannu/Code/arillumination/GUI/src/simProperties.cpp",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/simulation.cuh",
+		"/home/hofmannu/Code/arillumination/GUI/src/box.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/fiberProperties.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/sphere.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/box.cpp",
+		"/home/hofmannu/Code/arillumination/GUI/src/shell.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/sphere.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/shape.h",
+		"/home/hofmannu/Code/mbr_aroam_transym/@ExperimentalModel/Center_Model.m",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/matlab_interfacing/loadModelH5.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/Utility/CUDA/gpuModelBasedTranslationalTran.cu",
+		"/home/hofmannu/Code/mbr_aroam_transym/Utility/buildExpModel.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/@MBTransym/MBTransym.m",
+		"/home/hofmannu/Code/mbr_aroam_transym/Utility/CUDA/gpuModelBasedTranslationalTranKernel.cu",
+		"/home/hofmannu/.config/sublime-text-3/Packages/SublimeLinter/SublimeLinter.sublime-settings",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/lib/arillumination/GUI/src/mc.cu",
+		"/home/hofmannu/Code/mbr_aroam/.gitmodules",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/lib/CMakeLists.txt",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/noise.cpp",
+		"/home/hofmannu/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/hofmannu/Code/arillumination/Utility/getAbsorptionCoefficient.m",
+		"/home/hofmannu/Code/mbr_aroam/CUDA/alonestanding/src/interface.cuh",
+		"/home/hofmannu/Code/arillumination/GUI/CMakeLists.txt",
+		"/home/hofmannu/Code/arillumination/GUI/src/simProperties.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/main.cu",
+		"/home/hofmannu/Code/arillumination/GUI/src/fieldProperties.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/interface.h",
+		"/home/hofmannu/Code/arillumination/GUI/src/interface.cpp"
+	],
+	"find":
+	{
+		"height": 39.0
+	},
+	"find_in_files":
+	{
+		"height": 95.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/mc.cuh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6506,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								548,
+								548
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/interface.cuh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2719,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								588,
+								588
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 357.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/color_mapper.cuh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1827,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1653,
+								1653
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/structArgsIn.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1578,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1194,
+								1194
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 4,
+					"file": "src/mc.cu",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 42238,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14669,
+								14669
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 7824.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/interface.cu",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 23600,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9646,
+								9646
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 5325.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/color_mapper.cu",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4654,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1558,
+								1558
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 701.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 37.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.5,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.SublimeLinter":
+	{
+		"height": 0.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "yamct.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"STRU",
+				"GUI/src/structArgsIn.h"
+			],
+			[
+				"tube",
+				"GUI/src/tube.cpp"
+			],
+			[
+				"optVol",
+				"GUI/src/optVolume.h"
+			],
+			[
+				"CMak",
+				"GUI/src/CMakeLists.txt"
+			],
+			[
+				"sta",
+				"GUI/src/structArgsIn.h"
+			],
+			[
+				"mc.cuh",
+				"GUI/src/mc.cuh"
+			],
+			[
+				"interf",
+				"GUI/src/interface.cu"
+			],
+			[
+				"struc",
+				"GUI/src/structArgsIn.h"
+			],
+			[
+				"mc.c",
+				"GUI/src/mc.cu"
+			],
+			[
+				"ba",
+				"src/baseClass.h"
+			],
+			[
+				"base",
+				"src/baseClass.cpp"
+			],
+			[
+				"sim",
+				"src/simulation.cu"
+			],
+			[
+				"n",
+				"src/noise.cpp"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 392.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 592.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 270.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

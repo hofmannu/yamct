@@ -45,10 +45,14 @@ class color_mapper
 		float* get_pminCol() {return &minCol[0];};
 		float* get_pmaxCol() {return &maxCol[0];};
 
-		// transfer function
+		// transfer function for float and double
 		void convert_to_map(const float* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
+		void convert_to_map(const double* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
 		void convert_to_rgba(const float* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
+		void convert_to_rgba(const double* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
 		void convert_to_divmap(const float* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
+		void convert_to_divmap(const double* dataIn, const uint64_t nElem, unsigned char* dataOut) const;
+
 };
 
 #endif
