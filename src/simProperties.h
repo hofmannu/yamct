@@ -24,7 +24,7 @@ using namespace std;
 class simProperties
 {
 private:
-	uint64_t nPhotons = 1e6; // wanted number of photon packages simulated
+	uint64_t nPhotons = 2e6; // wanted number of photon packages simulated
 	uint64_t nPhotonsTrue; // true number of simulated photons
 	uint64_t nPPerThread = 10; // number of photons simulated in each thread
 	uint64_t threadsPerBlock = 512; // threads per block on GPU

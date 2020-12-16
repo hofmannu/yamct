@@ -21,7 +21,7 @@ class optProperties
 private:
 	float mua = 0.3; // absorption coefficient [1/mm]
 	float mus  = 4.2; // scattering coefficient [1/mm]
-	float g = 0.8; // anisotropy of medium
+	float g = 0.85; // anisotropy of medium
 	float n = 1.41; // optical index
 
 	// dependent properties (no set function)
