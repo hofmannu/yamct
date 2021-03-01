@@ -26,7 +26,8 @@ class simProperties
 private:
 	uint64_t nPhotons = 2e6; // wanted number of photon packages simulated
 	uint64_t nPhotonsTrue; // true number of simulated photons
-	uint64_t nPPerThread = 10; // number of photons simulated in each thread
+	// old option which  was taken out
+	// uint64_t nPPerThread = 1; // number of photons simulated in each thread
 	uint64_t threadsPerBlock = 64; // threads per block on GPU
 	uint64_t nBlocks; // dependent variable
 	uint8_t gpuID = 0; // id of gpu used
@@ -36,11 +37,11 @@ public:
 	simProperties();
 
 	void set_nPhotons(const uint64_t _nPhotons);
-	void set_nPPerThread(const uint64_t _nPPerThread);
+	// void set_nPPerThread(const uint64_t _nPPerThread);
 	void set_gpuID(const uint8_t _gpuID);
 
 	uint64_t get_nPhotons() const;
-	uint64_t get_nPPerThread() const;
+	// uint64_t get_nPPerThread() const;
 	uint64_t get_nPhotonsTrue() const;
 	uint64_t get_threadsPerBlock() const;
 	uint64_t get_nBlocks() const;

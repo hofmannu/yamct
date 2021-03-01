@@ -33,7 +33,6 @@
 #include <vector>
 #include <H5Cpp.h>
 
-
 #include "structArgsIn.h"
 #include "../lib/vtkwriter/vtkwriter.h"
 
@@ -104,9 +103,11 @@ private:
 	void update_slice(const uint8_t iDim, const uint32_t idx);
 	void update_slice_log(const uint8_t iDim, const uint32_t idx);
 	void update_plots(const int32_t* idxPos);
+	void write_settings(const string filePath);
+	void read_settings(const string filePath);
 
 	bool flagDebug = 1; // give more debugging related output in terminal
-	bool flagKillBound = 0; // should we kill photon at boundaries
+	bool flagKillBound = 1; // should we kill photon at boundaries
 
 	double simTime = 0; // tiome which was required for last simulation
 	bool isDone = 0; // flag showing if simulation is done

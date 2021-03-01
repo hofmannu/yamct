@@ -164,7 +164,7 @@ __device__  __inline__ static float getsigma(
 __device__  __inline__ static void normalize(vec3* vector)
 {
 	// const float normVal = rnorm3df(vector->x, vector->y, vector->z);
-	float normVal = fmaf(vector->z, vector->z, fmaf(vector->y, vector->y, vector->x* vector->x));
+	float normVal = fmaf(vector->z, vector->z, fmaf(vector->y, vector->y, vector->x * vector->x));
 
 	if ((normVal < 0.95) || (normVal > 1.05))
 	{
@@ -172,7 +172,7 @@ __device__  __inline__ static void normalize(vec3* vector)
 		printf("velocity is off by a lot: %f!\n", normVal);
 		if (normVal == 0)
 		{
-			printf("Norm 0 is a crime you rude person!\n");
+			printf("Norm 0 is a crime, you rude human!\n");
 		}
 		else
 		{
@@ -236,13 +236,6 @@ __device__  __inline__ static void scatter(
 	quaternion_rot(&b, sigma, vel); // rotate vel around rotated b by sigma
 	normalize(vel); // normalize vector here to balance inaccuracies
 	return;
-}
-
-// function returning sign of float
-__device__  __inline__ static float sign(const float number)
-{
-	const float val = (number < 0) ? -1 : 1;
-	return val;
 }
 
 /*
@@ -323,7 +316,7 @@ __device__  __inline__ static float min3(const float a, const float b, const flo
 }
 
 // check if two positions are contained within the same voxel
-__device__ bool sameVoxel(
+__device__ __inline__ static bool sameVoxel(
 	const vec3& posA, 
 	const vec3& posB, 
 	const constArgsIn& inArgs)
@@ -350,6 +343,7 @@ __device__ bool sameVoxel(
   return sv;
 }
 
+// Implementation of FMA as atomic operation for floats
 // z = z + x * y
 __device__ __inline__ float atomicFMA(float* address, const float x, const float y)
 {
@@ -370,32 +364,13 @@ __device__ __inline__ float atomicFMA(float* address, const float x, const float
   return __float_as_int(old);
 }
 
-// __device__ __inline__ double atomicFMA(double* address, const double x, const double y)
-// {
-//   unsigned long long int *address_as_ull = (unsigned long long int*) address;
-// 	unsigned long long int old = *address_as_ull;
-// 	unsigned long long int assumed;
-
-// 	do{
-// 		assumed = old;
-// 	  old = atomicCAS(
-// 	  	address_as_ull, 
-// 	  	assumed,
-// 	  	__double_as_longlong(fma(x, y, __longlong_as_double(assumed))));
-
-//     // Note: uses integer comparison to avoid hang in case of NaN (since NaN != NaN)
-//   } while (assumed != old);
-
-//   return __double_as_longlong(old);
-// }
-
 // push value over to heat matrix
 __device__ __inline__ void pushToHeatFMA(
 	const vec3& pos, // position of where our absorption event is happening 
 	const float weight, // amount of absorption event
 	const float scaleH, // weight of the photon stored in heat map
 	float* heat, // matrix containing the heat
-	const constArgsIn* inArgs) // constant input arguments for kernel
+	const constArgsIn& inArgs) // constant input arguments for kernel
 {
 	// convert position into index
 	bool inside = 0;
@@ -411,7 +386,7 @@ __device__ __inline__ void pushToHeatFMA(
 			if ((iz >= 0) && (iz < inArgs.dim[2]))
 			{
 				// assign absorption event to heat map
-				int64_t idx = ix + inArgs->dim[0] * (iy + iz * inArgs->dim[1]);
+				int64_t idx = ix + inArgs.dim[0] * (iy + iz * inArgs.dim[1]);
 				atomicFMA(&heat[idx], weight, scaleH);
 				inside = 1;
 			}
@@ -426,36 +401,40 @@ __device__ __inline__ void pushToHeatFMA(
 
 
 /* 
-	very confusing name for a function. what we actually 
+	find time required to reach closest voxel face in our direction of movement
 */
-__device__ float findDistFace(
+__device__ __inline__ float findDistFace(
 	const vec3& posA, 
 	const constArgsIn& inArgs,
 	const vec3& vel)
 {	
-    const int ix1 = floor(posA.x / inArgs.res[0]);
-    const int iy1 = floor(posA.y / inArgs.res[1]);
-    const int iz1 = floor(posA.z / inArgs.res[2]);
-    
-    const int ix2 = (vel.x >= 0) ? (ix1 + 1) : (ix1);
-    const int iy2 = (vel.y >= 0) ? (iy1 + 1) : (iy1);
-    const int iz2 = (vel.z >= 0) ? (iz1 + 1) : (iz1);
-    
-  	const float deltaX = fmaf((float) ix2, inArgs.res[0], -posA.x);
-		const float deltaY = fmaf((float) iy2, inArgs.res[1], -posA.y);
-		const float deltaZ = fmaf((float) iz2, inArgs.res[2], -posA.z);		
+	// find lower side of voxel in index offset w/ origin  = 0
+  const int ix1 = floor(posA.x / inArgs.res[0]);
+  const int iy1 = floor(posA.y / inArgs.res[1]);
+  const int iz1 = floor(posA.z / inArgs.res[2]);
+  
+  // depending on velocity direction define if upper or lower side meets path 
+  const int ix2 = (vel.x >= 0) ? (ix1 + 1) : (ix1);
+  const int iy2 = (vel.y >= 0) ? (iy1 + 1) : (iy1);
+  const int iz2 = (vel.z >= 0) ? (iz1 + 1) : (iz1);
+  
+  // convert closest face into distance
+  const float deltaX = fmaf((float) ix2, inArgs.res[0], -posA.x);
+	const float deltaY = fmaf((float) iy2, inArgs.res[1], -posA.y);
+	const float deltaZ = fmaf((float) iz2, inArgs.res[2], -posA.z);		
 
-    const float tx = fabs(deltaX / vel.x);
-    const float ty = fabs(deltaY / vel.y);
-    const float tz = fabs(deltaZ / vel.z);
+	// convert through velocity into "time"
+	const float tx = fabs(deltaX / vel.x);
+  const float ty = fabs(deltaY / vel.y);
+  const float tz = fabs(deltaZ / vel.z);
     
-    const float tmin = min3(tx, ty, tz);
+  const float tmin = min3(tx, ty, tz);
 
-    return tmin;
+  return tmin;
 }
 
 // move our photons position along vel vector by step
-__device__ void move(vec3& pos, const vec3& vel, const float step)
+__device__ __inline__ void move(vec3& pos, const vec3& vel, const float step)
 {	
 	pos.x = fmaf(vel.x, step, pos.x); // pos.x += vel.x * step;
 	pos.y = fmaf(vel.y, step, pos.y); // pos.y += vel.y * step;
@@ -465,7 +444,7 @@ __device__ void move(vec3& pos, const vec3& vel, const float step)
 
 // function sets weight to 0 if photon is beyond boundaries and 
 // kills it if this is the case
-__device__ float checkBoundary(
+__device__ __inline__ float checkBoundary(
 	const vec3& pos, // current position of photon 
 	const constArgsIn& inArgs, // constant input arguments
 	float weight, // weight of photon
@@ -477,7 +456,7 @@ __device__ float checkBoundary(
 		{
 			if ((pos.z < inArgs.origin[2]) || (pos.z > inArgs.maxPos[2]))
 			{				
-				// atomicAdd(&heat_dev[inArgs->dim[0] * inArgs->dim[1] * inArgs->dim[2]], weight);
+				atomicAdd(&heat_dev[inArgs.nElements], weight);
 				weight = 0;
 			}
 		}
@@ -489,103 +468,91 @@ __device__ float checkBoundary(
 // cuda kernel definition
 __global__ void simPhoton
 (
-		float * heat_dev, // output matrix to which we write our absorption
-		const constArgsIn* inArgs, // constant simulation parameters
-		const uint8_t* tissueTypes, // vector containing current tissue props
-		const optProps* optProp_dev,
-		const fiberProps* fiber) // struct containing fiber properties
+	float * heat_dev, // output matrix to which we write our absorption
+	const constArgsIn* inArgsPtr, // constant simulation parameters
+	const uint8_t* tissueTypes, // vector containing current tissue props
+	const optProps* optProp_dev,
+	const fiberProps* fiber) // struct containing fiber properties
 {
 	const constArgsIn inArgs = inArgsPtr[0];
 
 	// temp variables for scattering
 	const unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x; 
-	const float ls = 1e-3;// minimum travel distance [mm}
-	float weight; // ranges from 0 to 1 representing the weight of ph
+	const float ls = 1e-3;// minimum travel distance [mm]
 		
 	curandState cuState; // generate and initialize random number generator 
 	curand_init(tid, 0, 0, &cuState); // Initialize CURAND for this thread
-	
-	#pragma unroll	
-	for (uint64_t iPhoton = 0; iPhoton < inArgs.nPPerThread; iPhoton++)
-	{	
-		// generate starting position
-		vec3 pos; // position of photon [m]
-		vec3 vel; // directivity of photon propagation in tissue
-		vec3 tempPos;
-		optProps currProps; // temporary variable for optical properties of tissue
 
-		float s; // actual distance traveled by photon [mm]
-		float sleft; // unitless hop distance
-		// to get from unitless to unitfull hop distance: s_uint = s_unitless / mus
-		bool sv; // flag defining if we move within the same voxel
-			
-		weight = 1.0;
-		launch(pos, vel, cuState, fiber);
-		currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
+	// generate starting position
+	vec3 pos; // position of photon [m]
+	vec3 vel; // directivity of photon propagation in tissue, always length == 1
+	vec3 tempPos;
+	optProps currProps; // temporary variable for optical properties of tissue
 
-		// here starts the intense loop where calculation speed is critical	
-		while(weight > 0)
+	float s; // actual distance traveled by photon [mm]
+	float sleft; // unitless hop distance
+	// to get from unitless to unitfull hop distance: s_uint = s_unitless / mus
+	bool sv; // flag defining if we move within the same voxel
+		
+	float weight = 1.0;
+	launch(pos, vel, cuState, fiber);
+	currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
+
+	// here starts the intense loop where calculation speed is critical	
+	while(weight > 0)
+	{
+		sleft = -__logf(curand_uniform(&cuState)); // dimensionless pathlength
+		do
 		{
-			sleft = -__logf(curand_uniform(&cuState));
-			do
+			s = sleft / currProps.mu_s;
+			tempPos = pos; // get position estimate oif within same material
+			move(tempPos, vel, s); // tempPos = tempPos + vel * s
+			
+			sv = sameVoxel(pos, tempPos, inArgs); // check if temporary pos are in same voxel
+			if (sv) // if our photon is in same voxel
+			{ 
+				pos = tempPos; // update current position
+				const float scaleH = -expm1f(-currProps.mu_a * s); // 1 - exp(-mua * s)
+				pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
+				weight = fmaf(-weight, scaleH, weight); // weight = weight * (1 - scaleH);
+				sleft = 0; // update sleft
+			}
+			else // photon has crossed voxel boundary
 			{
-				s = sleft / currProps.mu_s;
+				s = ls + findDistFace(pos, inArgs, vel); // actual travel distance [mm]
+				const float scaleH = -expm1f(-currProps.mu_a * s); // 1 - exp(-mua * s)
+				pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
+				weight = fmaf(-weight, scaleH, weight); // weight = weight * (1 - scaleH);
+				sleft = fmaf(-s, currProps.mu_s, sleft); // fmaf(x, y, z) --> x * y + z
+				move(pos, vel, s); // update positions
 
-				// get position estimate if we would be moving within the same material
-				tempPos = pos;
-				move(tempPos, vel, s); // tempPos = tempPos + vel * s
+				if (sleft <= 0.01) // check if below littelest unitless step
+					sleft = 0;
 				
-				sv = sameVoxel(pos, tempPos, inArgs); // check if temporary pos are in same voxel
-				if (sv) // if our photon is in same voxel
-				{ 
-
-					pos = tempPos; // update current position
-					const float scaleH = -expm1f(-currProps.mu_a * s); // 1 - exp(-mua * s)
-					pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
-					weight = weight * (1 - scaleH);
-					sleft = 0; // update sleft
-				}
-				else // photon has crossed voxel boundary
-				{
-					s = ls + findDistFace(pos, inArgs, vel);
-					const float scaleH = -expm1f(-currProps.mu_a * s);
-
-					pushToHeatFMA(pos, weight, scaleH, heat_dev, inArgs);
-					weight = weight * (1 - scaleH);
-
-					// sleft = sleft - s * currProps.mu_s; // update left step (back into unitless)
-					sleft = fmaf(-s, currProps.mu_s, sleft); // fmaf(x, y, z) --> x * y + z
-					
-					move(pos, vel, s); // update positions
-
-					if (sleft <= ls) // check if below littelest unitless step
-						sleft = 0;
-					
-					// update optical properties of tissue
-					currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
-				}
-									
-				// if kill flag is enabled check if we are out of bounds
-				if (inArgs.killFlag)
-					weight = checkBoundary(pos, inArgs, weight, heat_dev);
-			
-			}while((sleft > 0) && (weight > 0)); // iteratively move and absorb in here
-			
-			scatter(&vel, cuState, currProps); // scatter photon if required
-			// alterantive implementation as scatterLW (contains steps)
+				// update optical properties of tissue
+				currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
+			}
+								
+			// if kill flag is enabled check if we are out of bounds
+			if (inArgs.killFlag)
+				weight = checkBoundary(pos, inArgs, weight, heat_dev);
 
 			// play roulette with photon
-			if (weight < 0.001)
+			if (weight < 1e-3)
 			{
 				if (curand_uniform(&cuState) > 0.1)
 					weight = 0; // kill photon
 				else
 					weight = __fmul_rn(weight, 10);
 			}
-
-		}
+		
+		}while((sleft > 0) && (weight > 0)); // iteratively move and absorb in here
+		
+		scatter(&vel, cuState, currProps); // scatter photon if required
+		// alterantive implementation as scatterLW (contains steps)
 
 	}
+	
 	return;
 }
 
@@ -626,8 +593,6 @@ mc::~mc()
 // class constructor
 mc::mc()
 {
-		
-
 	// generate default material 0 as water
 	optProperties water;
 	water.set_mua(0.4); // 1/mm
@@ -747,9 +712,7 @@ float* mc::get_plot(
 			returnedPlot = plotHeat[iDim];
 		}
 	}	
-
 	return returnedPlot;
-
 }
 
 // updates all plots along all dimensions
@@ -1053,9 +1016,9 @@ void mc::run_sim()
 		inArgs.origin[iDim] = volume.get_min(iDim);
 		inArgs.maxPos[iDim] = volume.get_max(iDim);
 	}
-	inArgs.nPPerThread = sim.get_nPPerThread(); // number of photons simulated per thread
 	inArgs.bgMaterial = volume.get_bgMaterialId();
 	inArgs.killFlag = flagKillBound;
+	inArgs.nElements = inArgs.dim[0] * inArgs.dim[1] * inArgs.dim[2];
 
 	// define optical properties of our materials
 	int nMaterial = tissues.size();
@@ -1176,9 +1139,9 @@ void mc::run_sim()
       &blockSize,
       (void*) simPhoton,
       0,
-      sim.get_nPhotonsTrue() / sim.get_nPPerThread());
+      sim.get_nPhotonsTrue());
 
-  int gridSize = ((sim.get_nPhotonsTrue() / sim.get_nPPerThread()) + blockSize - 1) / blockSize;
+  int gridSize = ((sim.get_nPhotonsTrue()) + blockSize - 1) / blockSize;
 
 	// start actual simulation
 	printf("Starting actual simulation with %d blocks, each %d threads\n",
@@ -1467,4 +1430,17 @@ bool mc::exportH5()
 	string filePath = "/home/hofmannu/r_sync/hfoam_raw_data/Fluence/default.h5";
 	bool success = exportH5(filePath);
 	return success;
+}
+
+// writes all the settings of the reconstruction procedure to a file
+void mc::write_settings(const string filePath)
+{
+	printf("Not implemented yet");
+	return;
+}
+
+void mc::read_settings(const string filePath)
+{
+	printf("Not implemented yet");
+	return;
 }

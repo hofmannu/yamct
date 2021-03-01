@@ -10,60 +10,7 @@ interface::interface()
 
 	// update information about GPUs
 	ScanGpus();
-	// add default geometrical structures
-	sphere skullSphere;
-	skullSphere.set_radius(4.06);
-	skullSphere.set_center(4.06, 0);
-	skullSphere.set_tType(1);
-	spheres.push_back(skullSphere);
 
-	sphere brainSphere;
-	brainSphere.set_radius(3.86);
-	brainSphere.set_center(4.06, 0);
-	brainSphere.set_tType(2);
-	spheres.push_back(brainSphere);
-
-	tube vessel;
-	vessel.set_startPos(0.5, 0);
-	vessel.set_startPos(0.0, 1);
-	vessel.set_startPos(-1.0, 2);
-	vessel.set_stopPos(0.5, 0);
-	vessel.set_stopPos(0.0, 1);
-	vessel.set_stopPos(1.0, 2);
-	vessel.set_iradius(0);
-	vessel.set_oradius(0.01);
-	vessel.set_tType(3);
-	tubes.push_back(vessel);
-
-	// define default optical properties
-	optProperties water;
-	water.set_mua(0.1);
-	water.set_mus(0.001);
-	water.set_g(0.85);
-	water.set_n(1.41);
-
-	optProperties skull;
-	skull.set_mua(0);
-	skull.set_mus(2.5);
-	skull.set_g(0.85);
-	skull.set_n(1.41);
-
-	optProperties brain;
-	brain.set_mua(0);
-	brain.set_mus(2.5);
-	brain.set_g(0.85);
-	brain.set_n(1.41);
-
-	optProperties blood;
-	blood.set_mua(10);
-	blood.set_mus(0.0001);
-	blood.set_g(0.85);
-	blood.set_n(1.41);
-
-	tissueTypes->push_back(water);
-	tissueTypes->push_back(skull);
-	tissueTypes->push_back(brain);
-	tissueTypes->push_back(blood);
 }
 
 // class destructor
@@ -232,11 +179,8 @@ void interface::Properties()
 	ImGui::Separator();
 	ImGui::Text("Simulation properties");
 	int nPhotons = simprop->get_nPhotons();
-	int nPPerThread = simprop->get_nPPerThread();
 	ImGui::InputInt("Number of photons", &nPhotons); ImGui::SameLine();
 	HelpMarker("Number of photon packages simulated using Monte Carlo.s");
-	ImGui::InputInt("Number of photons per thread", &nPPerThread);
-	simprop->set_nPPerThread(nPPerThread);
 	simprop->set_nPhotons(nPhotons);
 	ImGui::Text("True number of simulated photons: %d", simprop->get_nPhotonsTrue());
 	ImGui::Text("Number of blocks: %d, threads per block: %d", 

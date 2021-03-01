@@ -191,7 +191,7 @@
 			"file": "src/mc.cuh",
 			"settings":
 			{
-				"buffer_size": 6506,
+				"buffer_size": 6431,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -200,7 +200,7 @@
 			"file": "src/interface.cuh",
 			"settings":
 			{
-				"buffer_size": 2719,
+				"buffer_size": 2688,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -209,7 +209,7 @@
 			"file": "src/color_mapper.cuh",
 			"settings":
 			{
-				"buffer_size": 1827,
+				"buffer_size": 1949,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -218,7 +218,26 @@
 			"file": "src/structArgsIn.h",
 			"settings":
 			{
-				"buffer_size": 1578,
+				"buffer_size": 1581,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "Searching 495 files for \"heat_type\"\n\n/home/hofmannu/Code/yamct/src/interface.cu:\n  675  \t\tImGui::Separator();\n  676  \n  677: \t\theat_type* sliceX = sim.get_slice(0, xPos, flagLog, flagFluence);\n  678: \t\theat_type* sliceY = sim.get_slice(1, yPos, flagLog, flagFluence);\n  679  \n  680  \t\tImImagesc(sliceX,\n  ...\n  685  \t\tImGui::Image((void*)(intptr_t)fluence_texture_y, ImVec2(width, height2));\n  686  \n  687: \t\theat_type maxVal, minVal;\n  688  \t\tif (flagFluence)\n  689  \t\t{\n  ...\n  717  \t\t// // plot axial crossection\n  718  \t\tImGui::PlotConfig conf;\n  719: \t\theat_type* plotVec = sim.get_plot(0, &posXYZ[0], flagLog, flagFluence);\n  720  \t\tfloat* plotVecF = new float [sim.get_dim(0)];\n  721  \t\tfor (uint32_t iElement = 0; iElement < sim.get_dim(0); iElement++)\n  ...\n  727  \t\t\n  728  \t\t// run through vector to get min and max in y scale\n  729: \t\theat_type maxValPlot = plotVec[0];\n  730: \t\theat_type minValPlot = plotVec[0];\n  731  \t\tfor (uint32_t iX = 0; iX < sim.get_dim(0); iX++)\n  732  \t\t{\n\n/home/hofmannu/Code/yamct/src/interface.cuh:\n   14  \n   15  */\n   16: #define heat_type float\n   17  \n   18  \n\n/home/hofmannu/Code/yamct/src/mc.cu:\n  407  __device__ void pushToHeatFMA(\n  408  \tconst vec3& pos, // position of where our absorption event is happening \n  409: \tconst heat_type weight, // amount of absorption event\n  410: \tconst heat_type scaleH, // weight of the photon stored in fluence map\n  411: \tconst heat_type scaleF, \n  412: \theat_type* heat, // matrix containing the heat\n  413: \theat_type* fluence,\n  414  \tconst constArgsIn* inArgs) // constant input arguments for kernel\n  415  {\n  ...\n  447  \tvery confusing name for a function. what we actually \n  448  */\n  449: __device__ heat_type findDistFace(\n  450  \tconst vec3& posA, \n  451  \tconst constArgsIn* inArgs,\n  ...\n  460      const int iz2 = (vel.z >= 0) ? (iz1 + 1) : (iz1);\n  461      \n  462:   \tconst heat_type deltaX = fmaf((heat_type) ix2, inArgs->res[0], -posA.x);\n  463: \t\tconst heat_type deltaY = fmaf((heat_type) iy2, inArgs->res[1], -posA.y);\n  464: \t\tconst heat_type deltaZ = fmaf((heat_type) iz2, inArgs->res[2], -posA.z);\t\t\n  465  \n  466:     const heat_type tx = fabs(deltaX / vel.x);\n  467:     const heat_type ty = fabs(deltaY / vel.y);\n  468:     const heat_type tz = fabs(deltaZ / vel.z);\n  469      \n  470:     const heat_type tmin = min3(tx, ty, tz);\n  471  \n  472      // now we could convert tmin into s by\n  ...\n  495  // function sets weight to 0 if photon is beyond boundaries and \n  496  // kills it if this is the case\n  497: __device__ heat_type checkBoundary(\n  498  \tconst vec3& pos, // current position of photon \n  499  \tconst constArgsIn* inArgs, // constant input arguments\n  500: \theat_type weight, // weight of photon\n  501: \theat_type* heat_dev)\n  502  {\n  503  \tif ((pos.x < inArgs->origin[0]) || (pos.x > inArgs->maxPos[0]))\n  ...\n  519  __global__ void simPhoton\n  520  (\n  521: \t\theat_type* heat_dev, // output matrix to which we write our absorption\n  522: \t\theat_type* fluence_dev, \n  523  \t\t// const float * R_dev, // 1d vector containing reflectance\n  524  \t\tconst constArgsIn* inArgs, // constant simulation parameters\n  ...\n  529  \t// temp variables for scattering\n  530  \tconst unsigned int tid = threadIdx.x + blockIdx.x * blockDim.x; \n  531: \tconst heat_type ls = 1e-3;// minimum travel distance [mm}\n  532: \theat_type weight; // ranges from 0 to 1 representing the weight of ph\n  533  \t\n  534  \t// generate and initialize random number generator \n  ...\n  573  \t\t\t\t\t// const float expFact = expf(-currProps.mu_a * s);\n  574  \t\t\t\t\t// const float scaleH = 1.0 - expFact;\n  575: \t\t\t\t\tconst heat_type scaleH = -expm1f(-currProps.mu_a * s);\n  576: \t\t\t\t\tconst heat_type expFact = 1 - scaleH;\n  577  \t\t\t\t\t// absorb = weight * (1.0 - exp(scaler));\t\n  578  \t\t\t\t\t// pushToHeat(pos, absorb, weight * s, heat_dev, fluence_dev, inArgs);\n  ...\n  589  \t\t\t\t\t// const float expFact = expf(-currProps.mu_a * s);\n  590  \t\t\t\t\t// const float scaleH = 1.0 - expFact;\n  591: \t\t\t\t\tconst heat_type scaleH = -expm1f(-currProps.mu_a * s);\n  592: \t\t\t\t\tconst heat_type expFact = 1 - scaleH;\n  593  \t\t\t\t\tpushToHeatFMA(pos, weight, scaleH, s, heat_dev, fluence_dev, inArgs);\n  594  \t\t\t\t\t\n  ...\n  683  }\n  684  \n  685: heat_type* mc::get_slice(\n  686  \tconst uint8_t iDim, // dimension which we cut \n  687  \tconst float pos, // position where we cut\n  ...\n  707  \t}\n  708  \n  709: \theat_type* retSlice;\n  710  \n  711  \tif (flagFluence)\n  ...\n  735  }\n  736  \n  737: heat_type* mc::get_plot(\n  738  \tconst uint8_t iDim, // dimension along which we request\n  739  \tconst float* pos, // three element vector describing center position\n  ...\n  768  \t}\n  769  \n  770: \theat_type* returnedPlot;\n  771  \n  772  \tif (flagFluence) // here we are supposed to return fluence\n  ...\n  802  \n  803  \tuint32_t idxIn; // iX + nX * (iY * iZ * nY)\n  804: \theat_type* currPlot;\n  805  \n  806  \tfor (uint32_t iX = 0; iX < dims[0]; iX++)\n  ...\n  861  void mc::update_slice(const uint8_t iDim, const uint32_t idx)\n  862  {\n  863: \theat_type* currSlice = slice[iDim]; // get pointer to slice\n  864: \theat_type* currSliceFluence = sliceFluence[iDim];\n  865  \n  866  \tuint32_t idxIn, idxOut;\n  ...\n  917  void mc::update_slice_log(const uint8_t iDim, const uint32_t idx)\n  918  {\n  919: \theat_type* currSlice = sliceLog[iDim]; // get pointer to slice\n  920: \theat_type* currSliceFluence = sliceFluenceLog[iDim]; // get pointer to flu slice\n  921  \tuint32_t idxIn, idxOut;\n  922  \n  ...\n  996  \n  997  \t// allocate memory for heat and fluence on host\n  998: \theat = new heat_type [volume.get_nElem() + 1]; // last element is container for overfly\n  999: \theat_log = new heat_type [volume.get_nElem()];\n 1000: \tfluence = new heat_type [volume.get_nElem()];\n 1001: \tfluence_log = new heat_type [volume.get_nElem()];\n 1002  \n 1003  \t// grab dimensions etc from volume\n ....\n 1017  \t\t\tcurrVec[iXYZ] = origin[iDim] + res[iDim] + ((float) iXYZ + 0.5);\n 1018  \n 1019: \t\tplotHeat[iDim] = new heat_type [dims[iDim]];\n 1020: \t\tplotHeatLog[iDim] = new heat_type [dims[iDim]];\n 1021: \t\tplotFluence[iDim] = new heat_type [dims[iDim]];\n 1022: \t\tplotFluenceLog[iDim] = new heat_type [dims[iDim]];\n 1023  \t}\n 1024  \n 1025  \t// allocate memory for slices\n 1026: \tslice[0] = new heat_type [dims[1] * dims[2]]; // along x\n 1027: \tslice[1] = new heat_type [dims[0] * dims[2]]; // along y\n 1028: \tslice[2] = new heat_type [dims[0] * dims[1]]; // along z\n 1029: \tsliceLog[0] = new heat_type [dims[1] * dims[2]]; // along x\n 1030: \tsliceLog[1] = new heat_type [dims[0] * dims[2]]; // along y\n 1031: \tsliceLog[2] = new heat_type [dims[0] * dims[1]]; // along z\n 1032  \n 1033: \tsliceFluence[0] = new heat_type [dims[1] * dims[2]]; // along x\n 1034: \tsliceFluence[1] = new heat_type [dims[0] * dims[2]]; // along y\n 1035: \tsliceFluence[2] = new heat_type [dims[0] * dims[1]]; // along z\n 1036: \tsliceFluenceLog[0] = new heat_type [dims[1] * dims[2]]; // along x\n 1037: \tsliceFluenceLog[1] = new heat_type [dims[0] * dims[2]]; // along y\n 1038: \tsliceFluenceLog[2] = new heat_type [dims[0] * dims[1]]; // along z\n 1039  \n 1040  \tisHeatAlloc = 1;\n\n/home/hofmannu/Code/yamct/src/mc.cuh:\n   19  */\n   20  \n   21: #define heat_type float\n   22  \n   23  \n   ..\n   52   \n   53   \t// arrays containing our heat map [ix + iy * nx + iz * nx * ny]\n   54: \theat_type* heat; // normal heat map\n   55: \theat_type* heat_log; // logarthmic scaled heat map\n   56: \theat_type* fluence; // fluence map in linear scale\n   57: \theat_type* fluence_log; // fluence map in log scale\n   58  \tbool isHeatAlloc = 0;\n   59  \t\n   60  \t// same arrays but this time on our device\n   61: \theat_type* heat_dev; // pointer to memory for heat map on device\n   62: \theat_type* fluence_dev; // pointer to fluence memory on device\n   63  \tbool isHeatDevAlloc = 0;\n   64  \t\n   65  \t// minimum and maximum values of heat map in lin and log scale\n   66: \theat_type maxVal = 0; // maximum value in heat map\n   67: \theat_type minVal = 0; // minimum value in heat map\n   68: \theat_type maxValLog = 0; // maximum value in logarithmic heat map\n   69: \theat_type minValLog = 0; // minimum value in logarthmic heat map\n   70  \n   71  \t// min and max values of fluence map in lin and lof scale.\n   72: \theat_type maxFluence = 0; // maximum value of fluence\n   73: \theat_type minFluence = 0; // minimum value of fluence\n   74: \theat_type maxFluenceLog = 0; // maximum log value of fluence\n   75: \theat_type minFluenceLog = 0; // minimum log value of fluence\n   76  \n   77  \t// things for plotting of cross sections\n   78  \tuint32_t idxCross[3] = {0, 0, 0}; // current position of our crossection\n   79: \theat_type* slice[3]; // slice along each dimension (heat)\n   80: \theat_type* sliceLog[3]; // log slice along each dimension (heat)\n   81: \theat_type* sliceFluence[3]; // slice of fluence\n   82: \theat_type* sliceFluenceLog[3]; // log slice of fluence\n   83  \t// float* plot[3]; // 1d array in each dimension for plotting\n   84  \t// float* plotLog[3]; // 1d array in each dimension for plotting \n   ..\n   94  \tuint32_t idxCrossPlots[3] = {0, 0, 0};\n   95  \tfloat* vecs[3]; // vectors along each dimension\n   96: \theat_type* plotHeat[3]; // plot vectors along each dimension for heat\n   97: \theat_type* plotHeatLog[3]; \n   98: \theat_type* plotFluence[3];\n   99: \theat_type* plotFluenceLog[3];\n  100  \n  101  \t// void calc_reflectance(const float nWater, const float nTissue); \n  ...\n  128  \tsimProperties* get_psim() {return &sim;};\n  129  \toptVolume* get_pvolume() {return &volume;};\n  130: \theat_type* get_pheat() {return heat;};\n  131: \theat_type* get_pheat_log() {return heat_log;};\n  132  \tvector<optProperties>* get_ptissues() {return &tissues;};\n  133  \tfloat* get_pvec(const uint8_t iDim) {return vecs[iDim];};\n  134  \n  135  \t// get maximum and minimum value of mips and mipslog\n  136: \theat_type get_maxVal() const {return maxVal;}; // returns maximum value in heat map\n  137: \theat_type get_minVal() const {return minVal;}; // returns minimum value in heat map\n  138: \theat_type get_maxValLog() const {return maxValLog;}; // returns max log val\n  139: \theat_type get_minValLog() const {return minValLog;}; // returns min log val\n  140  \t\n  141: \theat_type get_maxFluence() const {return maxFluence;};\n  142: \theat_type get_minFluence() const {return minFluence;};\n  143: \theat_type get_maxFluenceLog() const {return maxFluenceLog;};\n  144: \theat_type get_minFluenceLog() const {return minFluenceLog;};\n  145  \n  146  \tuint32_t get_dim(const uint8_t iDim) const {return dims[iDim];};\n  ...\n  165  \tbool* get_pflagKillBound() {return &flagKillBound;};\n  166  \t// returns slice to given position along given dimension\n  167: \theat_type* get_slice(const uint8_t iDim, const float pos, const bool flagLog, const bool flagFluence);\n  168: \theat_type* get_plot(const uint8_t iDim, const float* pos, const bool flagLog, const bool flagFluence);\n  169  \t\n  170  \t// export functions\n\n/home/hofmannu/Code/yamct/src/structArgsIn.h:\n   43  struct optProps\n   44  {\n   45: \theat_type mu_a; // absorption coefficient in tissue [1/mm]\n   46: \theat_type mu_s; // scattering coefficient in tissue [1/mm]\n   47  \tfloat g; // anisotropy coefficient\n   48  \tfloat n; // refractive index\t\n   49  \n   50  \t// calculated properties\n   51: \theat_type mu_as; // \n   52  \tfloat g2; // nothing but g * g\n   53  \tfloat gx2; // nothing but 2 * g\n\n101 matches across 5 files\n",
+			"settings":
+			{
+				"buffer_size": 11348,
+				"line_ending": "Unix",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "src/interface.cu",
+			"settings":
+			{
+				"buffer_size": 23618,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -227,16 +246,16 @@
 			"file": "src/mc.cu",
 			"settings":
 			{
-				"buffer_size": 42238,
+				"buffer_size": 39481,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/interface.cu",
+			"file": "src/box.cpp",
 			"settings":
 			{
-				"buffer_size": 23600,
+				"buffer_size": 569,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -246,6 +265,24 @@
 			"settings":
 			{
 				"buffer_size": 4654,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/simProperties.h",
+			"settings":
+			{
+				"buffer_size": 1150,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/simProperties.cpp",
+			"settings":
+			{
+				"buffer_size": 759,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -304,6 +341,8 @@
 	],
 	"file_history":
 	[
+		"/home/hofmannu/Code/yamct/src/imgui_plot.h",
+		"/home/hofmannu/Code/yamct/src/imgui_plot.cpp",
 		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/Plot_Result.m",
 		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/VPrintf.m",
 		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/Interpolate_Model.m",
@@ -371,9 +410,10 @@
 	},
 	"find_in_files":
 	{
-		"height": 95.0,
+		"height": 99.0,
 		"where_history":
 		[
+			""
 		]
 	},
 	"find_state":
@@ -381,6 +421,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"heat_type"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -388,6 +429,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"float"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -398,7 +440,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 0,
 			"sheets":
 			[
 				{
@@ -407,15 +449,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6506,
+						"buffer_size": 6431,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								548,
-								548
+								4376,
+								4376
 							]
 						],
 						"settings":
@@ -424,10 +466,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1785.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -436,44 +478,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2719,
+						"buffer_size": 2688,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								588,
-								588
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 357.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/color_mapper.cuh",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1827,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1653,
-								1653
+								0,
+								0
 							]
 						],
 						"settings":
@@ -485,7 +498,36 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/color_mapper.cuh",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1949,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								780,
+								780
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
@@ -494,15 +536,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1578,
+						"buffer_size": 1581,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1194,
-								1194
+								315,
+								315
 							]
 						],
 						"settings":
@@ -516,57 +558,474 @@
 					},
 					"stack_index": 4,
 					"type": "text"
-				}
-			]
-		},
-		{
-			"selected": 2,
-			"sheets":
-			[
+				},
 				{
 					"buffer": 4,
-					"file": "src/mc.cu",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 42238,
+						"buffer_size": 11348,
 						"regions":
 						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										127,
+										136
+									],
+									[
+										202,
+										211
+									],
+									[
+										409,
+										418
+									],
+									[
+										558,
+										567
+									],
+									[
+										847,
+										856
+									],
+									[
+										891,
+										900
+									],
+									[
+										1074,
+										1083
+									],
+									[
+										1277,
+										1286
+									],
+									[
+										1339,
+										1348
+									],
+									[
+										1417,
+										1426
+									],
+									[
+										1444,
+										1453
+									],
+									[
+										1499,
+										1508
+									],
+									[
+										1698,
+										1707
+									],
+									[
+										1879,
+										1888
+									],
+									[
+										1904,
+										1913
+									],
+									[
+										1961,
+										1970
+									],
+									[
+										1986,
+										1995
+									],
+									[
+										2043,
+										2052
+									],
+									[
+										2068,
+										2077
+									],
+									[
+										2137,
+										2146
+									],
+									[
+										2191,
+										2200
+									],
+									[
+										2245,
+										2254
+									],
+									[
+										2311,
+										2320
+									],
+									[
+										2539,
+										2548
+									],
+									[
+										2691,
+										2700
+									],
+									[
+										2737,
+										2746
+									],
+									[
+										2896,
+										2905
+									],
+									[
+										2976,
+										2985
+									],
+									[
+										3274,
+										3283
+									],
+									[
+										3334,
+										3343
+									],
+									[
+										3612,
+										3621
+									],
+									[
+										3679,
+										3688
+									],
+									[
+										3988,
+										3997
+									],
+									[
+										4055,
+										4064
+									],
+									[
+										4212,
+										4221
+									],
+									[
+										4375,
+										4384
+									],
+									[
+										4459,
+										4468
+									],
+									[
+										4657,
+										4666
+									],
+									[
+										4831,
+										4840
+									],
+									[
+										5002,
+										5011
+									],
+									[
+										5070,
+										5079
+									],
+									[
+										5256,
+										5265
+									],
+									[
+										5327,
+										5336
+									],
+									[
+										5537,
+										5546
+									],
+									[
+										5637,
+										5646
+									],
+									[
+										5691,
+										5700
+									],
+									[
+										5749,
+										5758
+									],
+									[
+										5951,
+										5960
+									],
+									[
+										6008,
+										6017
+									],
+									[
+										6065,
+										6074
+									],
+									[
+										6125,
+										6134
+									],
+									[
+										6228,
+										6237
+									],
+									[
+										6293,
+										6302
+									],
+									[
+										6358,
+										6367
+									],
+									[
+										6426,
+										6435
+									],
+									[
+										6494,
+										6503
+									],
+									[
+										6562,
+										6571
+									],
+									[
+										6642,
+										6651
+									],
+									[
+										6714,
+										6723
+									],
+									[
+										6786,
+										6795
+									],
+									[
+										6861,
+										6870
+									],
+									[
+										6936,
+										6945
+									],
+									[
+										7011,
+										7020
+									],
+									[
+										7158,
+										7167
+									],
+									[
+										7286,
+										7295
+									],
+									[
+										7330,
+										7339
+									],
+									[
+										7389,
+										7398
+									],
+									[
+										7448,
+										7457
+									],
+									[
+										7598,
+										7607
+									],
+									[
+										7671,
+										7680
+									],
+									[
+										7855,
+										7864
+									],
+									[
+										7914,
+										7923
+									],
+									[
+										7973,
+										7982
+									],
+									[
+										8047,
+										8056
+									],
+									[
+										8195,
+										8204
+									],
+									[
+										8257,
+										8266
+									],
+									[
+										8319,
+										8328
+									],
+									[
+										8388,
+										8397
+									],
+									[
+										8595,
+										8604
+									],
+									[
+										8661,
+										8670
+									],
+									[
+										8734,
+										8743
+									],
+									[
+										8790,
+										8799
+									],
+									[
+										9106,
+										9115
+									],
+									[
+										9184,
+										9193
+									],
+									[
+										9220,
+										9229
+									],
+									[
+										9255,
+										9264
+									],
+									[
+										9485,
+										9494
+									],
+									[
+										9532,
+										9541
+									],
+									[
+										9788,
+										9797
+									],
+									[
+										9880,
+										9889
+									],
+									[
+										9972,
+										9981
+									],
+									[
+										10056,
+										10065
+									],
+									[
+										10149,
+										10158
+									],
+									[
+										10212,
+										10221
+									],
+									[
+										10275,
+										10284
+									],
+									[
+										10344,
+										10353
+									],
+									[
+										10626,
+										10635
+									],
+									[
+										10737,
+										10746
+									],
+									[
+										10964,
+										10973
+									],
+									[
+										11031,
+										11040
+									],
+									[
+										11220,
+										11229
+									]
+								],
+								"scope": ""
+							}
 						},
 						"selection":
 						[
 							[
-								14669,
-								14669
+								0,
+								0
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 7824.0,
+						"translation.y": 3859.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 10,
 					"type": "text"
-				},
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
 				{
 					"buffer": 5,
 					"file": "src/interface.cu",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 23600,
+						"buffer_size": 23618,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								9646,
-								9646
+								5352,
+								5352
 							]
 						],
 						"settings":
@@ -575,14 +1034,78 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 5325.0,
+						"translation.y": 2583.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 6,
+					"file": "src/mc.cu",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 39481,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								15479,
+								15479
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 8341.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/box.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 569,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								569,
+								569
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 8,
 					"file": "src/color_mapper.cu",
 					"semi_transient": false,
 					"settings":
@@ -594,8 +1117,8 @@
 						"selection":
 						[
 							[
-								1558,
-								1558
+								3170,
+								3170
 							]
 						],
 						"settings":
@@ -604,10 +1127,74 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 701.0,
+						"translation.y": 1772.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "src/simProperties.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1150,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								776,
+								776
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 153.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 10,
+					"file": "src/simProperties.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 759,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								391,
+								391
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
 					"type": "text"
 				}
 			]
@@ -629,24 +1216,38 @@
 				0,
 				0,
 				1,
-				1
+				2
 			],
 			[
 				1,
 				0,
 				2,
+				2
+			],
+			[
+				2,
+				0,
+				3,
 				1
+			],
+			[
+				2,
+				1,
+				3,
+				2
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.5,
+			0.33,
+			0.660315570415,
 			1.0
 		],
 		"rows":
 		[
 			0.0,
+			0.5,
 			1.0
 		]
 	},
@@ -745,7 +1346,7 @@
 		],
 		"width": 592.0
 	},
-	"selected_group": 0,
+	"selected_group": 1,
 	"settings":
 	{
 	},

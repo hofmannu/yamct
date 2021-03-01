@@ -38,7 +38,7 @@
 // different geometrical shapes
 #include "optVolume.h"
 #include "sphere.h"
-#include "box.h"
+#include "box.h"	
 #include "tube.h"
 
 using namespace std;
@@ -66,7 +66,7 @@ private:
 	const double* data, const uint64_t sizex, const uint64_t sizey, 
 	GLuint* out_texture, const color_mapper myCMap);
 
-	const char* windowTitle = "Fluence GUI";
+	const char* windowTitle = "YAMCT";
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.10f);
 	ImVec4 clear_color = ImVec4(0.60f, 0.55f, 0.45f, 0.10f);
 

@@ -9,6 +9,7 @@
 	ToDo:
 
 	Changelog:
+		- added nElements as precalculated value to constArgsIn
 
 */
 
@@ -21,6 +22,7 @@ struct constArgsIn
 {
 	// properties of output field
 	uint32_t dim[3]; // number of elements in field  direction
+	uint32_t nElements; // dim[0] * dim[1] * dim[2]
 	float res[3]; // resolution / bin size in each direction
 	float origin[3]; // first element in each direction
 	float maxPos[3]; // stores the maximum position of volume in each dim
@@ -33,8 +35,6 @@ struct constArgsIn
 	// float* Rdev;
 	// float dAlpha;
 	bool killFlag; // should photons be killed at bounary
-
-	uint64_t nPPerThread; // number of photons simulated per thread
 };
 
 /*
