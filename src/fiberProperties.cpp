@@ -38,6 +38,12 @@ void fiberProperties::set_rCore(const float _rCore)
 	return;
 }
 
+void fiberProperties::set_weight(const float _weight)
+{
+	weight = _weight;
+	return;
+}
+
 void fiberProperties::set_name(const string _name)
 {
 	name = _name;

@@ -3,10 +3,10 @@
 // class constructor
 interface::interface()
 {
-	arfiber = sim.get_pfiber(); // get pointer to fiber
 	simprop = sim.get_psim(); // get pointer to simulation properties
 	volume = sim.get_pvolume(); // get pointer to volumetric representation
 	tissueTypes = sim.get_ptissues(); // get pointer to tissue types
+	fibers = sim.get_pfibers();
 
 	// update information about GPUs
 	ScanGpus();
@@ -19,6 +19,7 @@ interface::~interface()
 
 }
 
+// check available GPUs 
 void interface::ScanGpus()
 {
 	// empty vector from old stuff
@@ -172,7 +173,7 @@ int getSPcores(cudaDeviceProp devProp)
 // interfacing for important properties like fiber stuff, field size etc
 void interface::Properties()
 {
-	ImGui::Begin("Simulation properties", &show_properties_window);
+	ImGui::Begin("Simulation", &show_properties_window);
 	
 	ImGui::Columns(1);
 	
@@ -253,7 +254,7 @@ void interface::Properties()
 		ImGui::Text("n");
 	ImGui::NextColumn();
 
-	ImGui::Columns(1);
+	ImGui::Columns(2);
 
 	bool is_all_valid = (is_volume_generated && is_materials_defined &&
 		isGpuOk);
@@ -296,6 +297,13 @@ void interface::Properties()
     ImGui::PopStyleVar();
 	}
 
+	ImGui::NextColumn();
+
+	if (ImGui::Button("Save settings"))
+	{
+		sim.write_settings("/home/hofmannu/output.json");
+	}
+
 	ImGui::End();
 	return;
 }
@@ -303,17 +311,40 @@ void interface::Properties()
 // allows the definition of our illumination properties
 void interface::Illumination()
 {
-	ImGui::Begin("Illumination", &show_illumination);
 
-	// fiber properties
-	string name = arfiber->get_name();
-	ImGui::Text("Fiber properties");
-	ImGui::Text("Name: %s\n", name);
-	ImGui::InputFloat("Numerical aperture", arfiber->get_pnumAp());
-	ImGui::InputFloat("Core diameter [mm]", arfiber->get_pdCore());
-	ImGui::InputFloat3("Position x/y/z [mm]", arfiber->get_ppos());
-	ImGui::InputFloat3("Orientation x/y/z [mm]", arfiber->get_porientation());
+	ImGui::Begin("Illumination", &show_illumination);
 	
+	if (ImGui::Button("Add fiber"))
+	{
+		fiberProperties newFiber;
+		fibers->push_back(newFiber);
+	}
+
+	// amek editable fields for all the fiber properties
+	for (uint8_t iFiber = 0; iFiber < fibers->size(); iFiber++)
+	{
+		ImGui::PushID(iFiber);
+		ImGui::Columns(2);
+		ImGui::Text("Fiber ID: %d", iFiber); ImGui::NextColumn();
+		if (ImGui::Button("x"))
+		{
+			fibers->erase(fibers->begin() + iFiber);
+		}
+		else
+		{
+			ImGui::Columns(1);
+			// fiber properties
+			fiberProperties currFiber = fibers->at(iFiber);
+			ImGui::InputFloat("Numerical aperture", currFiber.get_pnumAp());
+			ImGui::InputFloat("Core diameter [mm]", currFiber.get_pdCore());
+			ImGui::InputFloat3("Position x/y/z [mm]", currFiber.get_ppos());
+			ImGui::InputFloat3("Orientation x/y/z [mm]", currFiber.get_porientation());	
+			ImGui::InputFloat("Weight [1]", currFiber.get_pweight());
+			fibers->at(iFiber) = currFiber;
+		}
+		ImGui::PopID();
+		ImGui::Separator();
+	}
 	ImGui::End();
 	return;
 }
@@ -412,10 +443,8 @@ void interface::TissueProperties()
 			ImGui::NextColumn();
 			tissueTypes->at(iTissue) = currTissue;
 		}
-
 		ImGui::PopID();
 		ImGui::Separator();
-
 	}
 	ImGui::Columns(1);
 

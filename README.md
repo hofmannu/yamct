@@ -21,10 +21,11 @@ Libraries / pacakges required:
 *   stuff required for imgui
 *  `cmake` and `make`
 *  `glfw-x11`, `glew` used to display stuff
+*  `nlohmann-json` save settings of simulation to json file
 
 Archlinux installation command
 ```
-pacman -S cuda nvidia hdf5 cmake make glfw-x11 glew
+pacman -S nlohman-json cuda nvidia hdf5 cmake make glfw-x11 glew
 ```
 
 ## Building and running the program

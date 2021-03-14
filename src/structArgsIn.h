@@ -59,12 +59,13 @@ struct optProps
 // properties of fiber output
 struct fiberProps
 {
-	float pos[3];
-	float orientation[3];
-	float rCore;
+	float pos[3]; // position of ecnter of fiber facette
+	float orientation[3]; // spatial orientation of optical axis
+	float rCore; // core radius of fiber
 	float rCore2; // precalculated rCore * rCore
 	float na; // numerical aperture of fiber
 	float phiMax;
+	float randMax; // range of random numbers leading to usage of this fiber
 };
 
 #endif

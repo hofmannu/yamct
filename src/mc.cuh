@@ -32,16 +32,18 @@
 #include <math.h>
 #include <vector>
 #include <H5Cpp.h>
+#include <nlohmann/json.hpp>
 
 #include "structArgsIn.h"
 #include "../lib/vtkwriter/vtkwriter.h"
 
 using namespace std;
+using nlohmann::json;
 
 class mc
 {
 private:
-	fiberProperties fiber;
+	vector<fiberProperties> fibers;
 	vector<optProperties> tissues; // defines different tissue types
 	simProperties sim;
 	optVolume volume; // defines the distribution of our tissue types
@@ -103,8 +105,6 @@ private:
 	void update_slice(const uint8_t iDim, const uint32_t idx);
 	void update_slice_log(const uint8_t iDim, const uint32_t idx);
 	void update_plots(const int32_t* idxPos);
-	void write_settings(const string filePath);
-	void read_settings(const string filePath);
 
 	bool flagDebug = 1; // give more debugging related output in terminal
 	bool flagKillBound = 1; // should we kill photon at boundaries
@@ -122,7 +122,7 @@ public:
 	bool get_isDone() const {return isDone;};
 
 	// all our subclass pointer get functions
-	fiberProperties* get_pfiber() {return &fiber;};
+	vector<fiberProperties>* get_pfibers() {return &fibers;};
 	simProperties* get_psim() {return &sim;};
 	optVolume* get_pvolume() {return &volume;};
 	float* get_pheat() {return heat;};
@@ -170,6 +170,10 @@ public:
 	bool exportH5(); 
 	// returns 1 if successful, otherwise 0
 	bool exportVtk(const string filePath); // export full heat map to file
+	
+	// simulation setting handling 
+	void write_settings(const string filePath);
+	void read_settings(const string filePath);
 };
 
 #endif

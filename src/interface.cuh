@@ -93,7 +93,7 @@ private:
 	vector<cudaDeviceProp> deviceNames;
 
 	mc sim;
-	fiberProperties* arfiber;
+	vector<fiberProperties>* fibers;
 	simProperties* simprop;
 
 	vector<optProperties>* tissueTypes; // vector containing different tissue types

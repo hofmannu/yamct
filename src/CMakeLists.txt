@@ -14,6 +14,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
 set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true --ptxas-options=-v -O2")
 
+find_package(nlohmann_json 3.2.0 REQUIRED)
 
 find_library(H5CPP_LIB hdf5_cpp)
 find_library(H5_LIB hdf5)
@@ -39,6 +40,7 @@ target_link_libraries(MC PUBLIC
 	OptProperties
 	SimProperties
 	VtkWriter
+	nlohmann_json::nlohmann_json
 	"${H5CPP_LIB}" "${H5_LIB}")
 
 add_library(ColorMapper color_mapper.cu)

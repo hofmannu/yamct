@@ -1,4 +1,5 @@
 #include "mc.cuh"
+#include "quaternion_toolbox.cu"
 
 // scatters the photon into a new direction depending on currently employed 
 
@@ -6,60 +7,6 @@
 //   - r is normalized vector of rotation
 //   - alpha is angle
 //   - xyz is point to rotate, will be modified directly
-
-// default structure of a quaternion
-__device__ struct quaternion
-{
-	float x, y, z, w;
-};
-
-// structure holding a 3d vector used for positions and velocities in x y z
-__device__ struct vec3
-{
-	float x, y, z;
-};
-
-// get conjugate of it
-__device__ __inline__ static quaternion conjugate(quaternion quat)
-{
-  quat.x = -quat.x;
-  quat.y = -quat.y;
-  quat.z = -quat.z;
-	// quat.w stays the same!
-  return quat;
-}
-
-// multiply two quaternions
-// switched to fmaf for increased float accuracy
-__device__ __inline__ static quaternion mult(const quaternion& A, const quaternion& B)
-{
-  quaternion C;
-  C.x = -A.z * B.y;
-  C.x = fmaf(A.y, B.z, C.x);
-  C.x = fmaf(A.x, B.w, C.x);
-  C.x = fmaf(A.w, B.x, C.x);
-  // C.x = A.w * B.x + A.x * B.w + A.y * B.z - A.z * B.y;
-
-  C.y = -A.x * B.z;
-  C.y = fmaf(A.z, B.x, C.y);
-  C.y = fmaf(A.y, B.w, C.y);
-  C.y = fmaf(A.w, B.y, C.y);
-  // C.y = A.w * B.y + A.y * B.w + A.z * B.x - A.x * B.z ;
-
-  C.z = -A.y * B.x;
-  C.z = fmaf(A.z, B.w, C.z);
-  C.z = fmaf(A.x, B.y, C.z);
-  C.z = fmaf(A.w, B.z, C.z);
-  // C.z = A.w * B.z + A.x * B.y + A.z * B.w - A.y * B.x ;
-
-  C.w = -A.z * B.z;
-  C.w = fmaf(-A.y, B.y, C.w);
-  C.w = fmaf(-A.x, B.x, C.w);
-  C.w = fmaf(A.w, B.w, C.w);
-  // C.w = A.w * B.w - A.x * B.x - A.y * B.y - A.z * B.z;
-
-  return C;
-}
 
 // returns the optical properties for a given position
 __device__ __inline__ static optProps getOptProps(
@@ -96,43 +43,7 @@ __device__ __inline__ static optProps getOptProps(
 	return tissues[tissueId];
 }
 
-// perform a quaternion based rotation of our photon
-__device__ __inline__ static void quaternion_rot(
-		const vec3* rot, // vector around which we rotate
-		const float alpha, // rotation angle
-		vec3* dir // direction to rotate
-	)
-{
-
-	quaternion temp, quat_view, result;
-
-	const float alpha2 = __fdividef(alpha, 2.0);
-	const float sinalpha2 = __sinf(alpha2);
-
-	// this vector is already by its definition 1 if rx, ry, rz has length 1 as well
-	temp.x = rot->x * sinalpha2;
-	temp.y = rot->y * sinalpha2;
-	temp.z = rot->z * sinalpha2;
-	temp.w = cosf(alpha2);
-
-	// feed current position to first quaternion, already normalized as well
-	quat_view.x = dir->x;
-	quat_view.y = dir->y;
-	quat_view.z = dir->z;
-	quat_view.w = 0.0;
-
-	result = mult(mult(temp, quat_view), conjugate(temp));
-	
-	dir->x = result.x; // update x output value
-	dir->y = result.y; // update y output value
-	dir->z = result.z; // update z output value
-	
-	return;
-}
-
-/*
-	returns random angle required for scattering of photon into a new direction
-*/
+// returns random angle required for scattering of photon into a new direction
 __device__  __inline__ static float getsigma(
 	const float& g, // anisotropy coefficient
 	const float& gx2, // anisotropy coefficient times two
@@ -191,12 +102,11 @@ __device__  __inline__ static void scatter(
 	curandState& state, // random number generator
 	const optProps tissueProps) // properties of tissue we are currently in
 {
-
 	// generate rotation angles for scattering
 	const float sigma = getsigma(
 		tissueProps.g, tissueProps.gx2, tissueProps.g2, state);
 	const float phi = __fmul_rn(__fmul_rn(2.0, M_PI), curand_uniform(&state));
-	vec3 b;
+	vec3 b; // rotation vector oriented perpendicular to vel and new direction
 
 	if ((fabs(vel->x) >= fabs(vel->y)) && (fabs(vel->x) >= fabs(vel->z))){
 		// photon is mostly moving in x, so rectangular vector lies in y z plane
@@ -247,21 +157,28 @@ __device__  __inline__ static void scatter(
 */
 __device__  __inline__ static void launch(
 	vec3& pos, // position of photon in [x, y, z] in [m]
-	vec3& vel, // directory of movement in [x, y, z]
+	vec3* vel, // directory of movement in [x, y, z]
 	curandState& state, // random number generator
-	const fiberProps* fiber)
+	const fiberProps* fibers)
 {
 
-	// get positions and direction assuming dir = [1, 0, 0] 
-	// later we rotate
+	// check which fiber we are using
+	fiberProps currFiber; // temporary variable for fiber properties
+	const float randFiber = curand_uniform(&state); // random number
+	int idx = 0;
+	do
+	{
+		currFiber = fibers[idx];
+		idx++;
+	}while (currFiber.randMax < randFiber);
 
 	// generate random start positions in y z plane until in rCore
 	vec3 fiberOff;
 	do{
 		// ((rand * 2.0) - 1) * rCore
-		fiberOff.z = fmaf(curand_uniform(&state), 2.0, -1) * fiber->rCore; 
-		fiberOff.y = fmaf(curand_uniform(&state), 2.0, - 1) * fiber->rCore;
-	}while(fiber->rCore2 < (fmaf(fiberOff.z, fiberOff.z, fiberOff.y * fiberOff.y)));
+		fiberOff.z = fmaf(curand_uniform(&state), 2.0, -1) * currFiber.rCore; 
+		fiberOff.y = fmaf(curand_uniform(&state), 2.0, - 1) * currFiber.rCore;
+	}while(currFiber.rCore2 < (fmaf(fiberOff.z, fiberOff.z, fiberOff.y * fiberOff.y)));
 	fiberOff.x = 0;
 
 	float dirY, dirZ, rUnit;
@@ -271,26 +188,31 @@ __device__  __inline__ static void launch(
     rUnit = fmaf(dirY, dirY, dirZ * dirZ);
   }while(rUnit > 1);
    
-  const float sinPhiMax = sinf(fiber->phiMax);
-  vel.y = dirY * sinPhiMax;
-  vel.z = dirZ * sinPhiMax;
+  const float sinPhiMax = sinf(currFiber.phiMax);
+  vel->y = dirY * sinPhiMax;
+  vel->z = dirZ * sinPhiMax;
     
-  rUnit = fmaf(vel.y, vel.y, vel.z * vel.z); // rUint = y * y + z * z
-  vel.x = sqrtf(1 - rUnit);
-	// vel.x = sqrt(1 - (y^2 + z^2))
+  rUnit = fmaf(vel->y, vel->y, vel->z * vel->z); // rUint = y * y + z * z
+  vel->x = sqrtf(1 - rUnit);
+	
+  // construct rotation vector for quaternion with length 1
+  vec3 rotVector;
+  const float normVec = sqrtf(
+  	fmaf(currFiber.orientation[1], currFiber.orientation[1], 
+  	currFiber.orientation[2] * currFiber.orientation[2]));
+  rotVector.x = 0;
+  rotVector.y = -currFiber.orientation[2] / normVec;
+  rotVector.z = currFiber.orientation[1] / normVec;
 
-	// check if velocity is 0 at any launch condition (its never)
-	// if (rnorm3df(vel.x, vel.y, vel.z) == 0)
-	// 	printf("launch condition with 0 velocity is just not ok");
-
-	// TODO here comes the rotation for orientation not equal 1, 0, 0
-	// - a for fiberOff before adding to position
-	// - b for output velocity
+  // calulate rotation angle about the defined rotation vector
+  const float sigma = acos(currFiber.orientation[0]);
+	quaternion_rot(&rotVector, sigma, vel); // rotate direction vector
+  quaternion_rot(&rotVector, sigma, &fiberOff); // rotate facette
 
 	// update position to fiber t
-	pos.x = fiber->pos[0] + fiberOff.x;
-	pos.y = fiber->pos[1] + fiberOff.y;
-	pos.z = fiber->pos[2] + fiberOff.z;
+	pos.x = currFiber.pos[0] + fiberOff.x;
+	pos.y = currFiber.pos[1] + fiberOff.y;
+	pos.z = currFiber.pos[2] + fiberOff.z;
 
 	return;
 }
@@ -320,8 +242,7 @@ __device__ __inline__ static bool sameVoxel(
 	const vec3& posA, 
 	const vec3& posB, 
 	const constArgsIn& inArgs)
-{
-	
+{	
 	bool sv = 0; // initially we are pessimistic (not same voxel)
   const int32_t idxAX = posA.x / inArgs.res[0];
   const int32_t idxBX = posB.x / inArgs.res[0];
@@ -339,7 +260,6 @@ __device__ __inline__ static bool sameVoxel(
   		}
   	}
   }
-
   return sv;
 }
 
@@ -444,10 +364,10 @@ __device__ __inline__ void move(vec3& pos, const vec3& vel, const float step)
 
 // function sets weight to 0 if photon is beyond boundaries and 
 // kills it if this is the case
-__device__ __inline__ float checkBoundary(
+__device__ __inline__ void checkBoundary(
 	const vec3& pos, // current position of photon 
 	const constArgsIn& inArgs, // constant input arguments
-	float weight, // weight of photon
+	float& weight, // weight of photon
 	float* heat_dev)
 {
 	if ((pos.x < inArgs.origin[0]) || (pos.x > inArgs.maxPos[0]))
@@ -462,7 +382,7 @@ __device__ __inline__ float checkBoundary(
 		}
 	}
 	
-	return weight;
+	return;
 }
 
 // cuda kernel definition
@@ -472,7 +392,7 @@ __global__ void simPhoton
 	const constArgsIn* inArgsPtr, // constant simulation parameters
 	const uint8_t* tissueTypes, // vector containing current tissue props
 	const optProps* optProp_dev,
-	const fiberProps* fiber) // struct containing fiber properties
+	const fiberProps* fiberProp_dev) // vector containing fiber properties
 {
 	const constArgsIn inArgs = inArgsPtr[0];
 
@@ -495,7 +415,7 @@ __global__ void simPhoton
 	bool sv; // flag defining if we move within the same voxel
 		
 	float weight = 1.0;
-	launch(pos, vel, cuState, fiber);
+	launch(pos, &vel, cuState, fiberProp_dev);
 	currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 
 	// here starts the intense loop where calculation speed is critical	
@@ -533,12 +453,10 @@ __global__ void simPhoton
 				currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 			}
 								
-			// if kill flag is enabled check if we are out of bounds
-			if (inArgs.killFlag)
-				weight = checkBoundary(pos, inArgs, weight, heat_dev);
+			if (inArgs.killFlag) // if kill flag enabled, check if still in range
+				checkBoundary(pos, inArgs, weight, heat_dev);
 
-			// play roulette with photon
-			if (weight < 1e-3)
+			if (weight < 1e-3) // play roulette with photon
 			{
 				if (curand_uniform(&cuState) > 0.1)
 					weight = 0; // kill photon
@@ -547,12 +465,9 @@ __global__ void simPhoton
 			}
 		
 		}while((sleft > 0) && (weight > 0)); // iteratively move and absorb in here
-		
 		scatter(&vel, cuState, currProps); // scatter photon if required
 		// alterantive implementation as scatterLW (contains steps)
-
 	}
-	
 	return;
 }
 
@@ -1041,19 +956,45 @@ void mc::run_sim()
 		optPropHost[iMaterial].gx2 = 2.0 * optPropHost[iMaterial].g;
 	}
 
-	// define fiber properties
-	fiberProps fiberHost;
-	for (uint8_t iDim = 0; iDim < 3; iDim++)
+	// allocate memory for fiber properties
+	int nFibers = fibers.size(); // number of fibers
+	printf("Initializing a total of %d fibers\n", nFibers);
+	fiberProps* fiberPropHost = new fiberProps[nFibers];
+
+	float totalWeight = 0;
+	for (uint8_t iFiber = 0; iFiber < nFibers; iFiber++)
 	{
-		fiberHost.pos[iDim] = fiber.get_pos(iDim);
-		fiberHost.orientation[iDim] = fiber.get_orientation(iDim);
+		totalWeight += fibers[iFiber].get_weight();
 	}
-	fiberHost.rCore = fiber.get_rCore();
-	fiberHost.rCore2  = fiberHost.rCore * fiberHost.rCore;
-	fiberHost.na = fiber.get_numAp();
-	
-	// TODO replace this with the actual calculation depending on the medium
-	fiberHost.phiMax = fiber.get_theta(1.33);
+	float lastWeight = 0;
+	for (uint8_t iFiber = 0; iFiber < nFibers; iFiber++)
+	{
+		// normalize fiber orientation
+		const float normOr = sqrt(
+			fibers[iFiber].get_orientation(0) * fibers[iFiber].get_orientation(0) +
+			fibers[iFiber].get_orientation(1) * fibers[iFiber].get_orientation(1) +
+			fibers[iFiber].get_orientation(2) * fibers[iFiber].get_orientation(2));
+
+		for (uint8_t iDim = 0; iDim < 3; iDim++)
+		{
+			fiberPropHost[iFiber].pos[iDim] = fibers[iFiber].get_pos(iDim);
+			fiberPropHost[iFiber].orientation[iDim] = 
+				fibers[iFiber].get_orientation(iDim) / normOr;
+		}
+		fiberPropHost[iFiber].rCore = fibers[iFiber].get_rCore();
+		fiberPropHost[iFiber].rCore2  = fiberPropHost[iFiber].rCore * 
+			fiberPropHost[iFiber].rCore;
+		fiberPropHost[iFiber].na = fibers[iFiber].get_numAp();
+		
+		// TODO replace this with the actual calculation depending on the medium
+		fiberPropHost[iFiber].phiMax = fibers[iFiber].get_theta(1.33);
+		
+		// do decide which fiber emmits photon package we generate a random number
+		// between 0 and 1 and project it onto a rated fiber range
+		lastWeight += fibers[iFiber].get_weight() / totalWeight;
+		fiberPropHost[iFiber].randMax = lastWeight;
+	}
+	fiberPropHost[nFibers - 1].randMax = 1.1;
 
 	// allocate memory for tissue mapping
 	uint8_t* tissueTypes_dev;
@@ -1104,15 +1045,15 @@ void mc::run_sim()
 	}
 
 	// alocate memory on GPU for fiber properties and copy them over
-	fiberProps* fiber_dev;
-	err = cudaMalloc( (void**)&fiber_dev, sizeof(fiberProps) );
+	fiberProps* fiberProp_dev;
+	err = cudaMalloc( (void**)&fiberProp_dev, sizeof(fiberProps) * nFibers);
 	if (err != cudaSuccess)
 	{
 		printf("Could not allocate memory on card for fiber struct.\n");
 		throw "cudaMallocErr";
 	}
 
-	cudaMemcpy(fiber_dev, &fiberHost, sizeof(fiberProps), cudaMemcpyHostToDevice);
+	cudaMemcpy(fiberProp_dev, &fiberPropHost, sizeof(fiberProps) * nFibers, cudaMemcpyHostToDevice);
 	if (err != cudaSuccess)
 	{
 		printf("Could not copy fiber struct over to GPU.\n");
@@ -1152,7 +1093,7 @@ void mc::run_sim()
 		inArgs_dev, // constant simulation parameters
 		tissueTypes_dev, // defines the distribution of our tissue types
 		optProp_dev, // random number 
-		fiber_dev); // fiber properties
+		fiberProp_dev); // fiber properties
 	cudaDeviceSynchronize();	
 
 	err = cudaGetLastError();
@@ -1184,7 +1125,9 @@ void mc::run_sim()
 	isHeatDevAlloc = 0;
 
 	cudaFree(optProp_dev);
+	cudaFree(fiberProp_dev);
 	delete[] optPropHost;
+	delete[] fiberPropHost;
 
 	cudaFree(inArgs_dev);
 
@@ -1200,8 +1143,12 @@ void mc::run_sim()
 	}
 	photonRatio = sum / ((float) sim.get_nPhotonsTrue());
 	if (flagDebug)
-		printf("[debug] Overall photons found (0 ... 1): %f, nans: %d\n", 
+	{
+		printf("[debug] Overall photons found (0 ... 1): %.2f, nans: %d\n", 
 			photonRatio, nanCount);
+		printf("[debug] Percentage in collection bin (0 ... 1): %.2f\n", 
+			heat[volume.get_nElem()] / sum);
+	}
 
 	// scale heat by volume and nphotons
 	const float scalingFac = (float) sim.get_nPhotonsTrue() * volume.get_volume_voxel();
@@ -1216,12 +1163,13 @@ void mc::run_sim()
 
 	calcMinMax(); // calculate minimum and maximum value in heat map
 	if (flagDebug)
-	 	printf("[debug] maximum value in field: %f, minimum value in fiedl: %f\n", maxVal, minVal);
+	{
+	 	printf("[debug] maximum value in field: %f, minimum value in field: %f\n", 
+	 		maxVal, minVal);
+	}
 	
 	calcLog(); // calculate logarthmic represntation of field
-	
-	// generate an initial set of slices
-	for (uint8_t iDim = 0; iDim < 3; iDim++)
+	for (uint8_t iDim = 0; iDim < 3; iDim++) // generate an initial set of slices
 	{
 		update_slice(iDim, 0);
 		update_slice_log(iDim, 0);	
@@ -1435,7 +1383,26 @@ bool mc::exportH5()
 // writes all the settings of the reconstruction procedure to a file
 void mc::write_settings(const string filePath)
 {
-	printf("Not implemented yet");
+	printf("Saving full simulation settings to file");
+	json j;
+
+	// simulation properties
+	j["nPhotons"] = sim.get_nPhotons();
+	j["killFlag"] = flagKillBound;
+
+	// fiber properties
+	// j["numAp"] = fiber->get_numAp();
+	// j["dCore"] = fiber->get_dCore();
+	// j["posX"] = fiber->get_pos(0);
+	// j["posY"] = fiber->get_pos(1);
+	// j["posZ"] = fiber->get_pos(2);
+	// j["dirX"] = fiber->get_orientation(0);
+	// j["dirY"] = fiber->get_orientation(1);
+	// j["dirZ"] = fiber->get_orientation(2);
+
+	std::ofstream o(filePath);
+	o << j << std::endl;
+
 	return;
 }
 
