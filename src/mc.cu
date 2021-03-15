@@ -165,9 +165,10 @@ __device__  __inline__ static void launch(
 	// check which fiber we are using
 	fiberProps currFiber; // temporary variable for fiber properties
 	const float randFiber = curand_uniform(&state); // random number
-	int idx = 0;
+	uint8_t idx = 0;
 	do
 	{
+
 		currFiber = fibers[idx];
 		idx++;
 	}while (currFiber.randMax < randFiber);
@@ -958,14 +959,12 @@ void mc::run_sim()
 
 	// allocate memory for fiber properties
 	int nFibers = fibers.size(); // number of fibers
-	printf("Initializing a total of %d fibers\n", nFibers);
 	fiberProps* fiberPropHost = new fiberProps[nFibers];
 
 	float totalWeight = 0;
 	for (uint8_t iFiber = 0; iFiber < nFibers; iFiber++)
-	{
 		totalWeight += fibers[iFiber].get_weight();
-	}
+	
 	float lastWeight = 0;
 	for (uint8_t iFiber = 0; iFiber < nFibers; iFiber++)
 	{
@@ -994,7 +993,7 @@ void mc::run_sim()
 		lastWeight += fibers[iFiber].get_weight() / totalWeight;
 		fiberPropHost[iFiber].randMax = lastWeight;
 	}
-	fiberPropHost[nFibers - 1].randMax = 1.1;
+	fiberPropHost[nFibers - 1].randMax = 1.001;
 
 	// allocate memory for tissue mapping
 	uint8_t* tissueTypes_dev;
@@ -1053,7 +1052,7 @@ void mc::run_sim()
 		throw "cudaMallocErr";
 	}
 
-	cudaMemcpy(fiberProp_dev, &fiberPropHost, sizeof(fiberProps) * nFibers, cudaMemcpyHostToDevice);
+	cudaMemcpy(fiberProp_dev, fiberPropHost, sizeof(fiberProps) * nFibers, cudaMemcpyHostToDevice);
 	if (err != cudaSuccess)
 	{
 		printf("Could not copy fiber struct over to GPU.\n");
