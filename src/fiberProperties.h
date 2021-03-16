@@ -20,8 +20,8 @@ using namespace std;
 class fiberProperties
 {
 private:
-	float numAp = 0.03; // numerical aperture of fiber
-	float dCore = 0.005; // core diameter of fiber [mm]
+	float numAp = 0.2; // numerical aperture of fiber
+	float dCore = 0.2; // core diameter of fiber [mm]
 	float pos[3] = {0, 0, 0}; // position of fiber input [mm]
 	float orientation[3] = {1, 0, 0}; // orientation of fiber input (vector)
 	float weight = 1; // factor of photon emissing, e.g 2 means twice as many photons as each 1

@@ -119,6 +119,7 @@ __device__  __inline__ static void scatter(
 		b.z = b.y;
 		// b.x = -b.y / vel.x * (vel.y + vel.z);
 		b.x = -__fmul_rn( __fdividef(b.y, vel->x), (vel->y + vel->z));
+		//printf("A - Initial deflection vector b: %f, %f, %f\n", b.x, b.y, b.z);
 	}
 	else if ((fabs(vel->y) >= fabs(vel->x)) && (fabs(vel->y) >= fabs(vel->z))){
 		// photon is mostly moving in y, so rectangular vector lies in x y plane
@@ -130,6 +131,7 @@ __device__  __inline__ static void scatter(
 		b.z = b.x;
 		// b.y = -b.x / vy * (vx + vz)
 		b.y = -__fmul_rn(__fdividef(b.x, vel->y), (vel->x + vel->z));
+		//printf("B - Initial deflection vector b: %f, %f, %f\n", b.x, b.y, b.z);
 	}
 	else if ((fabs(vel->z) >= fabs(vel->x)) && (fabs(vel->z) >= fabs(vel->y))){
 		// photon is mostly moving in z, so rectangular vector lies in x y plane
@@ -140,11 +142,21 @@ __device__  __inline__ static void scatter(
 		);
 		b.y = b.x;
 		b.z = -__fmul_rn(__fdividef(b.x, vel->z), (vel->x + vel->y));
+		//printf("C - Initial deflection vector b: %f, %f, %f\n", b.x, b.y, b.z);
+	}
+	else
+	{
+		printf("something here does not work at all\n");
+		printf("vel vector = [%f, %f, %f]\n", vel->x, vel->y, vel->z);
 	}
 
+
+	// printf("rot vec length: %f, vel before: %f\n", getLengthVec(b), getLengthVec(vel));
 	quaternion_rot(vel, phi, &b); // rotate b around vel to generate deflection vector	
 	quaternion_rot(&b, sigma, vel); // rotate vel around rotated b by sigma
-	normalize(vel); // normalize vector here to balance inaccuracies
+	normalize(vel);
+	// printf("rot vec length: %f, vel after: %f\n", getLengthVec(b), getLengthVec(vel));
+
 	return;
 }
 
@@ -195,20 +207,26 @@ __device__  __inline__ static void launch(
     
   rUnit = fmaf(vel->y, vel->y, vel->z * vel->z); // rUint = y * y + z * z
   vel->x = sqrtf(1 - rUnit);
+
 	
   // construct rotation vector for quaternion with length 1
-  vec3 rotVector;
-  const float normVec = sqrtf(
-  	fmaf(currFiber.orientation[1], currFiber.orientation[1], 
-  	currFiber.orientation[2] * currFiber.orientation[2]));
-  rotVector.x = 0;
-  rotVector.y = -currFiber.orientation[2] / normVec;
-  rotVector.z = currFiber.orientation[1] / normVec;
+  // bug here!!
+  if (!((currFiber.orientation[1] == 0) && (currFiber.orientation[2] == 0)))
+  {
+	  vec3 rotVector;
+	  const float normVec = sqrtf(
+	  	fmaf(currFiber.orientation[1], currFiber.orientation[1], 
+	  	currFiber.orientation[2] * currFiber.orientation[2]));
+	  rotVector.x = 0;
+	  rotVector.y = -currFiber.orientation[2] / normVec;
+	  rotVector.z = currFiber.orientation[1] / normVec;
 
-  // calulate rotation angle about the defined rotation vector
-  const float sigma = acos(currFiber.orientation[0]);
-	quaternion_rot(&rotVector, sigma, vel); // rotate direction vector
-  quaternion_rot(&rotVector, sigma, &fiberOff); // rotate facette
+	  printf("Initial vel vector: %f, %f, %f\n", vel->x, vel->y, vel->z);
+	  // calulate rotation angle about the defined rotation vector
+	  const float sigma = acos(currFiber.orientation[0]);
+		quaternion_rot(&rotVector, sigma, vel); // rotate direction vector
+	  quaternion_rot(&rotVector, sigma, &fiberOff); // rotate facette
+	}
 
 	// update position to fiber t
 	pos.x = currFiber.pos[0] + fiberOff.x;
@@ -419,7 +437,8 @@ __global__ void simPhoton
 	launch(pos, &vel, cuState, fiberProp_dev);
 	currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 
-	// here starts the intense loop where calculation speed is critical	
+	// here starts the intense loop where calculation speed is critical
+	unsigned int iScatter = 0;
 	while(weight > 0)
 	{
 		sleft = -__logf(curand_uniform(&cuState)); // dimensionless pathlength
@@ -517,6 +536,9 @@ mc::mc()
 	water.set_g(0.9); // does not matter as long as we have no scattering
 
 	tissues.push_back(water);
+
+	fiberProperties startFiber;
+	fibers.push_back(startFiber); 
 }
 
 float* mc::get_slice(
