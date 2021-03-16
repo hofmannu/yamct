@@ -3,7 +3,7 @@ Disclaimer: This project is still in the development phase and while basic funct
 # YAMCT (Yet Another Monte Carlo Toolbox)
 Here we go, yet another toolbox for light simulations in highly scattering media like biological tissues. Completely unnecessary one might think. There are so many out there someone else might mention. Nevertheless, when I started to look for such a toolbox I was highly disappointed by the non-userfriendly versions which people published in the web over the last few years. Either using them is impossible due to a bad user interface or they perform incredibly slow because they are still running on a CPU.
 
-This is my attempt to build a Monte Carlo simulation toolbox featuring CUDA acceleration on NVIDIA cards, a friendly user interface based on the amazing `ImGui` project, handling multilayered tissues with elegance, geometry creation on the fly and directly from the GUI, and export to datatypes readable from different software like Python, MATLAB, etc. through the established `h5` standard. The simulations are performed voxel by voxel relying on Code extensively tested on the CPU.
+This is my attempt to build a Monte Carlo simulation toolbox featuring CUDA acceleration on NVIDIA cards, a friendly user interface based on the amazing `ImGui` project, handling multilayered tissues with elegance, geometry creation on the fly and directly from the GUI, combining multiple illuminations profiles in a single simulation, and export to datatypes readable from different software like Python, MATLAB, etc. through the established `h5` standard. The simulations are performed voxel by voxel relying on Code extensively tested on the CPU.
 
 Documentation is lacking for now. Lazy programmers often say that an intuitive user interface does not require too much documentation.
 
@@ -41,9 +41,16 @@ cd Debug
 cmake .. && make all && ./main_exp
 ```
 
-# Support
+# Support and ongoing development
 
 I am actively working on this project. If you want any feature implemented (for example different geometrical shapes, export types, or illumination types) feel free to open an issue and I will get back to you as soon as possible.
+
+Things which are on my ToDo list include
+*  Different illumination types (e.g. gaussian beam)
+*  Saving and loading of simulation settings through json files
+*  Predefined tissue types to automatically load optical properties depending on used wavlenght
+*  Export to different file types
+*  Testing for Windows
 
 # Similar / alternative projects
 *  [OMLC website with examples and explanations](https://omlc.org/software/mc/)
