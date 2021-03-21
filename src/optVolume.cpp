@@ -26,8 +26,22 @@ void optVolume::set_bgMaterialId(const uint8_t _bgMaterialId)
 	return;
 }
 
+// generate a new sphere and add it to our already existing list
+void optVolume::new_sphere()
+{
+	sphere newSphere;
+	spheres.push_back(newSphere);
+	return;
+}
+
+void optVolume::delete_sphere(const uint8_t iSphere)
+{
+	spheres.erase(spheres.begin() + iSphere);
+	return;
+}
+
 // TODO make boundaries for checking only range from + / - radius in each dimension
-void optVolume::addSphere(sphere* iSphere)
+void optVolume::add_sphere(sphere* iSphere)
 {
 	float currPos[3];
 	for (uint32_t ix = 0; ix < dims[0]; ix++)
@@ -59,8 +73,27 @@ void optVolume::addSphere(sphere* iSphere)
 	return;
 }
 
+void optVolume::set_sphere(const uint8_t iSphere, const sphere sphereObj)
+{
+	spheres[iSphere] = sphereObj;
+	return;
+}
+
+void optVolume::new_box()
+{
+	box newBox;
+	boxes.push_back(newBox);
+	return;
+}
+
+void optVolume::delete_box(const uint8_t iBox)
+{
+	boxes.erase(boxes.begin() + iBox);
+	return;
+}
+
 // TODO make boundaries for checking only range from + / - radius in each dimension
-void optVolume::addBox(box* iBox)
+void optVolume::add_box(box* iBox)
 {
 	float currPos[3];
 	for (uint32_t ix = 0; ix < dims[0]; ix++)
@@ -92,9 +125,27 @@ void optVolume::addBox(box* iBox)
 	return;
 }
 
+void optVolume::set_box(const uint8_t iBox, const box boxObj)
+{
+	boxes[iBox] = boxObj;
+	return;
+}
+
+void optVolume::new_tube()
+{
+	tube newTube;
+	tubes.push_back(newTube);
+	return;
+}
+
+void optVolume::delete_tube(const uint8_t iTube)
+{
+	tubes.erase(tubes.begin() + iTube);
+	return;
+}
 
 // adds a tube shape to our volume
-void optVolume::addTube(tube* iTube)
+void optVolume::add_tube(tube* iTube)
 {
 	float currPos[3];
 	for (uint32_t ix = 0; ix < dims[0]; ix++)
@@ -123,6 +174,12 @@ void optVolume::addTube(tube* iTube)
 	if (iTube->get_tType() < minMaterial)
 		minMaterial = iTube->get_tType();
 	
+	return;
+}
+
+void optVolume::set_tube(const uint8_t iTube, const tube tubeObj)
+{
+	tubes[iTube] = tubeObj;
 	return;
 }
 
@@ -282,4 +339,194 @@ float optVolume::get_volume_voxel()
 {
 	const float volume = res[0] * res[1] * res[2]; 
 	return volume;
+}
+
+void optVolume::generate_volume()
+{
+	for (uint8_t iPriority = 0; iPriority < 255; iPriority++)
+	{
+		// go through all shapes and check if they match this priority, if so push them to
+		// volume class
+		for (uint8_t iSphere = 0; iSphere < spheres.size(); iSphere++)
+		{
+			if (spheres[iSphere].get_priority() == iPriority)
+			{
+				printf("Adding a sphere\n");
+				add_sphere(&spheres[iSphere]);
+			}
+		}
+
+		for (uint8_t iBox = 0; iBox < boxes.size(); iBox++)
+		{
+			if (boxes[iBox].get_priority() == iPriority)
+			{
+				printf("Adding a box\n");
+				add_box(&boxes[iBox]);
+			}
+		}
+
+		for (uint8_t iTube = 0; iTube < tubes.size(); iTube++)
+		{
+			if (tubes[iTube].get_priority() == iPriority)
+			{
+				printf("Adding a tube\n");
+				add_tube(&tubes[iTube]);
+			}
+		}
+
+	}
+	return;
+}
+
+// return all geometrioes as a json file
+json optVolume::get_json()
+{
+	json jv;
+
+	// write all important field properties to file
+	jv["fieldProps"] = {
+		{"resX", res[0]},
+		{"resY", res[1]},
+		{"resZ", res[2]},
+		{"minX", lowerCorner[0]},
+		{"minY", lowerCorner[1]},
+		{"minZ", lowerCorner[2]},
+		{"maxX", upperCorner[0]},
+		{"maxY", upperCorner[1]},
+		{"maxZ", upperCorner[2]},
+		{"bgMaterialId", bgMaterialId}
+	};
+
+	jv["nSpheres"] = spheres.size();
+	jv["nTubes"] = tubes.size();
+	jv["nBoxes"] = boxes.size();
+
+	// add all spheres to out config
+	for (uint8_t iSphere = 0; iSphere < spheres.size(); iSphere++)
+	{
+		char labelSphere[80];
+		sprintf(labelSphere, "sphere%d", iSphere);
+		jv[labelSphere] = {
+			{"r", spheres[iSphere].get_radius()},
+			{"centerX", spheres[iSphere].get_center(0)},
+			{"centerY", spheres[iSphere].get_center(1)},
+			{"centerZ", spheres[iSphere].get_center(2)},
+			{"priority", spheres[iSphere].get_priority()},
+			{"material", spheres[iSphere].get_tType()}
+		};
+	}
+
+	for (uint8_t iTube = 0; iTube < tubes.size(); iTube++)
+	{
+		char labelTube[80];
+		sprintf(labelTube, "tube%d", iTube);
+		jv[labelTube] = {
+			{"r1", tubes[iTube].get_iradius()},
+			{"r2", tubes[iTube].get_oradius()},
+			{"startPosX", tubes[iTube].get_startPos(0)},
+			{"startPosY", tubes[iTube].get_startPos(1)},
+			{"startPosZ", tubes[iTube].get_startPos(2)},
+			{"stopPosX", tubes[iTube].get_stopPos(0)},
+			{"stopPosY", tubes[iTube].get_stopPos(1)},
+			{"stopPosZ", tubes[iTube].get_stopPos(2)},
+			{"priority",tubes[iTube].get_priority() },
+			{"material",tubes[iTube].get_tType() }
+		};
+	}
+
+	for (uint8_t iBox = 0; iBox < boxes.size(); iBox++)
+	{
+		char labelBox[80];
+		sprintf(labelBox, "box%d", iBox);
+		jv[labelBox] = {
+			{"cornerAX", boxes[iBox].get_cornerA(0)},
+			{"cornerAY", boxes[iBox].get_cornerA(1)},
+			{"cornerAZ", boxes[iBox].get_cornerA(2)},
+			{"cornerBX", boxes[iBox].get_cornerB(0)},
+			{"cornerBY", boxes[iBox].get_cornerB(1)},
+			{"cornerBZ", boxes[iBox].get_cornerB(2)},
+			{"priority", boxes[iBox].get_priority()},
+			{"material", boxes[iBox].get_tType()}		
+		};
+	}
+
+	return jv;
+}
+
+// import all settings for the geometry from out settings file
+void optVolume::read_json(const json jOpt)
+{
+
+	uint8_t nSpheres = jOpt["nSpheres"];
+	uint8_t nTubes = jOpt["nTubes"];
+	uint8_t nBoxes = jOpt["nBoxes"];
+
+
+	res[0] = jOpt["fieldProps"]["resX"];
+	res[1] = jOpt["fieldProps"]["resY"];
+	res[2] = jOpt["fieldProps"]["resZ"];
+	lowerCorner[0] = jOpt["fieldProps"]["minX"];
+	lowerCorner[1] = jOpt["fieldProps"]["minY"]; 
+	lowerCorner[2] = jOpt["fieldProps"]["minZ"];
+	upperCorner[0] = jOpt["fieldProps"]["maxX"];
+	upperCorner[1] = jOpt["fieldProps"]["maxY"];
+	upperCorner[2] = jOpt["fieldProps"]["maxZ"];
+	bgMaterialId = jOpt["fieldProps"]["bgMaterialId"];
+	
+	// add all spheres to out config
+	spheres.clear();
+	for (uint8_t iSphere = 0; iSphere < nSpheres; iSphere++)
+	{
+		sphere currSphere;
+		char labelSphere[80];
+		sprintf(labelSphere, "sphere%d", iSphere);
+		currSphere.set_radius(jOpt[labelSphere]["r"]);
+		currSphere.set_center(jOpt[labelSphere]["centerX"], 0);
+		currSphere.set_center(jOpt[labelSphere]["centerY"], 1);
+		currSphere.set_center(jOpt[labelSphere]["centerZ"], 2);
+		currSphere.set_priority(jOpt[labelSphere]["priority"]);
+		currSphere.set_tType(jOpt[labelSphere]["material"]);
+		spheres.push_back(currSphere);
+	}
+
+	tubes.clear();
+	for (uint8_t iTube = 0; iTube < nTubes; iTube++)
+	{
+		tube currTube;
+		char labelTube[80];
+		sprintf(labelTube, "tube%d", iTube);
+
+		currTube.set_iradius(jOpt[labelTube]["r1"]);
+		currTube.set_oradius(jOpt[labelTube]["r2"]);
+		currTube.set_startPos(jOpt[labelTube]["startPosX"], 0);
+		currTube.set_startPos(jOpt[labelTube]["startPosY"], 1);
+		currTube.set_startPos(jOpt[labelTube]["startPosZ"], 2);
+		currTube.set_stopPos(jOpt[labelTube]["stopPosX"], 0);
+		currTube.set_stopPos(jOpt[labelTube]["stopPosY"], 1);
+		currTube.set_stopPos(jOpt[labelTube]["stopPosZ"], 2);
+		currTube.set_priority(jOpt[labelTube]["priority"]);
+		currTube.set_tType(jOpt[labelTube]["material"]);
+		tubes.push_back(currTube);
+	}
+
+	boxes.clear();
+	for (uint8_t iBox = 0; iBox < nBoxes; iBox++)
+	{
+		box currBox;
+		char labelBox[80];
+		sprintf(labelBox, "box%d", iBox);
+		
+		currBox.set_cornerA(jOpt[labelBox]["cornerAX"], 0);
+		currBox.set_cornerA(jOpt[labelBox]["cornerAY"], 1);
+		currBox.set_cornerA(jOpt[labelBox]["cornerAZ"], 2);
+		currBox.set_cornerB(jOpt[labelBox]["cornerBX"], 0);
+		currBox.set_cornerB(jOpt[labelBox]["cornerBY"], 1);
+		currBox.set_cornerB(jOpt[labelBox]["cornerBZ"], 2);
+		currBox.set_priority(jOpt[labelBox]["priority"]);
+		currBox.set_tType(jOpt[labelBox]["material"]);
+
+		boxes.push_back(currBox);
+	}
+
+	return;
 }

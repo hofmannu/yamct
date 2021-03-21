@@ -438,7 +438,6 @@ __global__ void simPhoton
 	currProps = getOptProps(pos, inArgs, tissueTypes, optProp_dev);
 
 	// here starts the intense loop where calculation speed is critical
-	unsigned int iScatter = 0;
 	while(weight > 0)
 	{
 		sleft = -__logf(curand_uniform(&cuState)); // dimensionless pathlength
@@ -955,7 +954,7 @@ void mc::run_sim()
 		inArgs.maxPos[iDim] = volume.get_max(iDim);
 	}
 	inArgs.bgMaterial = volume.get_bgMaterialId();
-	inArgs.killFlag = flagKillBound;
+	inArgs.killFlag = sim.get_flagKillBound();
 	inArgs.nElements = inArgs.dim[0] * inArgs.dim[1] * inArgs.dim[2];
 
 	// define optical properties of our materials
@@ -1396,7 +1395,7 @@ bool mc::exportH5(const string filePath)
 // save dataset as h5 to default path
 bool mc::exportH5()
 {
-	string filePath = "/home/hofmannu/r_sync/hfoam_raw_data/Fluence/default.h5";
+	string filePath = "default.h5";
 	bool success = exportH5(filePath);
 	return success;
 }
@@ -1404,31 +1403,104 @@ bool mc::exportH5()
 // writes all the settings of the reconstruction procedure to a file
 void mc::write_settings(const string filePath)
 {
-	printf("Saving full simulation settings to file");
 	json j;
 
 	// simulation properties
 	j["nPhotons"] = sim.get_nPhotons();
-	j["killFlag"] = flagKillBound;
+	j["killFlag"] = sim.get_flagKillBound();
+	j["nFibers"] = fibers.size();
+	j["nTissues"] = tissues.size();
 
 	// fiber properties
-	// j["numAp"] = fiber->get_numAp();
-	// j["dCore"] = fiber->get_dCore();
-	// j["posX"] = fiber->get_pos(0);
-	// j["posY"] = fiber->get_pos(1);
-	// j["posZ"] = fiber->get_pos(2);
-	// j["dirX"] = fiber->get_orientation(0);
-	// j["dirY"] = fiber->get_orientation(1);
-	// j["dirZ"] = fiber->get_orientation(2);
+	for (uint8_t iFiber = 0; iFiber < fibers.size(); iFiber++)
+	{
+		char nameCurr[80];
+		sprintf(nameCurr, "fiber%d", iFiber);
+		j[nameCurr] = {
+			{"numAp", fibers[iFiber].get_numAp()},
+			{"dCore", fibers[iFiber].get_dCore()},
+			{"posX", fibers[iFiber].get_pos(0)},
+			{"posY", fibers[iFiber].get_pos(1)},
+			{"posZ", fibers[iFiber].get_pos(2)},
+			{"dirX", fibers[iFiber].get_orientation(0)},
+			{"dirY", fibers[iFiber].get_orientation(1)},
+			{"dirZ", fibers[iFiber].get_orientation(2)},
+			{"weight", fibers[iFiber].get_weight()}
+		};
+	}
+
+	// tissue properties
+	for (uint8_t iTissue = 0; iTissue < tissues.size(); iTissue++)
+	{
+		char nameCurr[80];
+		sprintf(nameCurr, "tissue%d", iTissue);
+		j[nameCurr] = {
+			{"mua", tissues[iTissue].get_mua()},
+			{"mus", tissues[iTissue].get_mus()},
+			{"g", tissues[iTissue].get_g()},
+			{"n", tissues[iTissue].get_n()}
+		};
+	}
+
+	json jGeom = volume.get_json();
+	j.insert(jGeom.begin(), jGeom.end());
 
 	std::ofstream o(filePath);
-	o << j << std::endl;
+	o << j << endl;
 
 	return;
 }
 
+// read settings back from the json file
 void mc::read_settings(const string filePath)
 {
-	printf("Not implemented yet");
+	ifstream ifs(filePath);
+	json inputJs = json::parse(ifs);
+
+	sim.set_nPhotons(inputJs["nPhotons"]);
+	sim.set_flagKillBound(inputJs["killFlag"]);
+
+	uint8_t nFibers = inputJs["nFibers"];
+	uint8_t nTissues = inputJs["nTissues"];
+
+	// empty all currently existing fibers
+	fibers.clear();
+
+	// load all fiber definitions from file
+	for (uint8_t iFiber = 0; iFiber < nFibers; iFiber++)
+	{
+		char nameCurr[80];
+		sprintf(nameCurr, "fiber%d", iFiber);
+		fiberProperties newFiber;
+		newFiber.set_numAp(inputJs[nameCurr]["numAp"]);
+		newFiber.set_dCore(inputJs[nameCurr]["dCore"]);
+		newFiber.set_pos(0, inputJs[nameCurr]["posX"]);
+		newFiber.set_pos(1, inputJs[nameCurr]["posY"]);
+		newFiber.set_pos(2, inputJs[nameCurr]["posZ"]);
+		newFiber.set_orientation(0, inputJs[nameCurr]["dirX"]);
+		newFiber.set_orientation(1, inputJs[nameCurr]["dirY"]);
+		newFiber.set_orientation(2, inputJs[nameCurr]["dirZ"]);
+		newFiber.set_weight(inputJs[nameCurr]["weight"]);
+		fibers.push_back(newFiber);
+	} 
+
+	// read optical properties from settings file
+	tissues.clear();
+	for (uint8_t iTissue = 0; iTissue < nTissues; iTissue++)
+	{
+		char nameCurr[80];
+		sprintf(nameCurr, "tissue%d", iTissue);
+		optProperties newProp;
+		newProp.set_mua(inputJs[nameCurr]["mua"]);
+		newProp.set_mus(inputJs[nameCurr]["mus"]);
+		newProp.set_g(inputJs[nameCurr]["g"]);
+		newProp.set_n(inputJs[nameCurr]["n"]);
+
+		tissues.push_back(newProp);
+	}
+
+	// read geometry from file
+	volume.read_json(inputJs);
+
 	return;
 }

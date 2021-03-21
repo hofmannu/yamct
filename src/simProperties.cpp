@@ -31,3 +31,9 @@ void simProperties::calc_threads()
 	nPhotonsTrue = nBlocks * threadsPerBlock;
 	return;
 }
+
+void simProperties::set_flagKillBound(const bool _flagKillBound)
+{
+	flagKillBound = _flagKillBound;
+	return;
+}

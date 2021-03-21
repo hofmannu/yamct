@@ -1,3 +1,10 @@
+/*
+	superclass used to describe shapes
+	Author: Urs Hofmann
+	Mail: hofmannu@ethz.ch
+	Date: 19.03.2021
+*/
+
 #ifndef SHAPE_H
 #define SHAPE_H
 

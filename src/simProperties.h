@@ -31,7 +31,7 @@ private:
 	uint64_t threadsPerBlock = 64; // threads per block on GPU
 	uint64_t nBlocks; // dependent variable
 	uint8_t gpuID = 0; // id of gpu used
-
+	bool flagKillBound = 1;
 	void calc_threads();
 public:
 	simProperties();
@@ -47,6 +47,10 @@ public:
 	uint64_t get_nBlocks() const;
 
 	uint8_t get_gpuID() const {return gpuID;};
+
+	bool get_flagKillBound() const {return flagKillBound;};
+	void set_flagKillBound(const bool _flagKillBound);
+	bool* get_pflagKillBound() {return &flagKillBound;};
 
 };
 #endif

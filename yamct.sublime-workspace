@@ -4,6 +4,42 @@
 		"selected_items":
 		[
 			[
+				"field",
+				"fieldProps"
+			],
+			[
+				"corner",
+				"cornerB"
+			],
+			[
+				"label",
+				"labelBox"
+			],
+			[
+				"input",
+				"inputJs"
+			],
+			[
+				"ti",
+				"tissues"
+			],
+			[
+				"uint",
+				"uint8_t"
+			],
+			[
+				"get_",
+				"get_priority"
+			],
+			[
+				"begi",
+				"begin"
+			],
+			[
+				"ui",
+				"uint8_t"
+			],
+			[
 				"minFluen",
 				"minFluenceLog"
 			],
@@ -40,10 +76,6 @@
 				"newTube"
 			],
 			[
-				"uint",
-				"uint32_t"
-			],
-			[
 				"const",
 				"constArgsIn"
 			],
@@ -62,10 +94,6 @@
 			[
 				"fileP",
 				"filePathString"
-			],
-			[
-				"ui",
-				"uint32_t"
 			],
 			[
 				"update",
@@ -136,10 +164,6 @@
 				"field_height"
 			],
 			[
-				"field",
-				"field_width"
-			],
-			[
 				"iput",
 				"inputMatrixA"
 			],
@@ -191,7 +215,7 @@
 			"file": "src/mc.cuh",
 			"settings":
 			{
-				"buffer_size": 6431,
+				"buffer_size": 6490,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -200,7 +224,7 @@
 			"file": "src/interface.cuh",
 			"settings":
 			{
-				"buffer_size": 2688,
+				"buffer_size": 2627,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -215,11 +239,28 @@
 			}
 		},
 		{
+			"file": "src/interface.cu",
+			"settings":
+			{
+				"buffer_size": 23627,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
 			"file": "src/structArgsIn.h",
 			"settings":
 			{
-				"buffer_size": 1581,
+				"buffer_size": 1757,
 				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/sphere.h",
+			"settings":
+			{
+				"buffer_size": 791,
 				"line_ending": "Unix"
 			}
 		},
@@ -234,28 +275,19 @@
 			}
 		},
 		{
-			"file": "src/interface.cu",
+			"file": "src/box.h",
 			"settings":
 			{
-				"buffer_size": 23618,
+				"buffer_size": 711,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/mc.cu",
+			"file": "CMakeLists.txt",
 			"settings":
 			{
-				"buffer_size": 39481,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/box.cpp",
-			"settings":
-			{
-				"buffer_size": 569,
+				"buffer_size": 1227,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -273,8 +305,25 @@
 			"file": "src/simProperties.h",
 			"settings":
 			{
-				"buffer_size": 1150,
+				"buffer_size": 1338,
 				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/optVolume.h",
+			"settings":
+			{
+				"buffer_size": 4168,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/hofmannu/output.json",
+			"settings":
+			{
+				"buffer_size": 842,
 				"line_ending": "Unix"
 			}
 		},
@@ -282,7 +331,34 @@
 			"file": "src/simProperties.cpp",
 			"settings":
 			{
-				"buffer_size": 759,
+				"buffer_size": 871,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/optVolume.cpp",
+			"settings":
+			{
+				"buffer_size": 12955,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/shape.h",
+			"settings":
+			{
+				"buffer_size": 546,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/box.cpp",
+			"settings":
+			{
+				"buffer_size": 696,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -302,6 +378,10 @@
 			[
 				"insta",
 				"Package Control: Install Package"
+			],
+			[
+				"json",
+				"Set Syntax: JSON"
 			],
 			[
 				"inst",
@@ -341,6 +421,9 @@
 	],
 	"file_history":
 	[
+		"/home/hofmannu/Code/yamct/src/mc.cu",
+		"/home/hofmannu/Code/yamct/src/tube.h",
+		"/home/hofmannu/Code/yamct/src/sphere.h",
 		"/home/hofmannu/Code/yamct/src/imgui_plot.h",
 		"/home/hofmannu/Code/yamct/src/imgui_plot.cpp",
 		"/home/hofmannu/Code/mbr_aroam_transym/ExpModel/@ExperimentalModel/Plot_Result.m",
@@ -406,7 +489,7 @@
 	],
 	"find":
 	{
-		"height": 39.0
+		"height": 24.0
 	},
 	"find_in_files":
 	{
@@ -421,6 +504,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"]},",
+			";\n",
 			"heat_type"
 		],
 		"highlight": true,
@@ -440,7 +525,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -449,15 +534,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6431,
+						"buffer_size": 6490,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4376,
-								4376
+								953,
+								953
 							]
 						],
 						"settings":
@@ -466,10 +551,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 1785.0,
+						"translation.y": 750.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
@@ -478,15 +563,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2688,
+						"buffer_size": 2627,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								469,
+								469
 							]
 						],
 						"settings":
@@ -498,7 +583,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
@@ -527,24 +612,53 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "src/structArgsIn.h",
+					"file": "src/interface.cu",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1581,
+						"buffer_size": 23627,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								315,
-								315
+								7852,
+								7852
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 3105.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/structArgsIn.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1757,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								358,
+								358
 							]
 						],
 						"settings":
@@ -556,11 +670,40 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 5,
+					"file": "src/sphere.h",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 791,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								791,
+								791
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
 					"semi_transient": false,
 					"settings":
 					{
@@ -999,113 +1142,111 @@
 							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 3859.0,
+						"translation.y": 154.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 17,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
-					"buffer": 5,
-					"file": "src/interface.cu",
+					"buffer": 7,
+					"file": "src/box.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 23618,
+						"buffer_size": 711,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5352,
-								5352
+								699,
+								699
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"translate_tabs_to_spaces": false
+							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 2583.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/mc.cu",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 39481,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								15479,
-								15479
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 8341.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "src/box.cpp",
+					"buffer": 0,
+					"file": "src/mc.cuh",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 569,
+						"buffer_size": 6490,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								569,
-								569
+								4056,
+								4056
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
+							"syntax": "Packages/CUDA C++/cuda-c++.tmLanguage",
 							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1440.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "CMakeLists.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1227,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1145,
+								1145
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CMake/CMake.sublime-syntax"
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 4,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 1,
+			"selected": 2,
 			"sheets":
 			[
 				{
-					"buffer": 8,
+					"buffer": 9,
 					"file": "src/color_mapper.cu",
 					"semi_transient": false,
 					"settings":
@@ -1130,24 +1271,24 @@
 						"translation.y": 1772.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 10,
 					"file": "src/simProperties.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1150,
+						"buffer_size": 1338,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								776,
-								776
+								770,
+								770
 							]
 						],
 						"settings":
@@ -1156,10 +1297,131 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 153.0,
+						"translation.y": 315.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "src/optVolume.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4168,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								815,
+								815
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 375.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "/home/hofmannu/output.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 842,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								335,
+								335
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+						},
+						"translation.x": 1651.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 13,
+					"file": "src/simProperties.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 871,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								827,
+								827
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 45.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "src/optVolume.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 12955,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8360,
+								8360
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4530.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
 					"type": "text"
 				}
 			]
@@ -1169,20 +1431,54 @@
 			"sheets":
 			[
 				{
-					"buffer": 10,
-					"file": "src/simProperties.cpp",
+					"buffer": 15,
+					"file": "src/shape.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 759,
+						"buffer_size": 546,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								391,
-								391
+								172,
+								172
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 16,
+					"file": "src/box.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 696,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								96,
+								96
 							]
 						],
 						"settings":
@@ -1191,10 +1487,10 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 90.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -1202,7 +1498,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 26.0
+		"height": 24.0
 	},
 	"input":
 	{
@@ -1222,7 +1518,7 @@
 				1,
 				0,
 				2,
-				2
+				3
 			],
 			[
 				2,
@@ -1234,7 +1530,19 @@
 				2,
 				1,
 				3,
-				2
+				4
+			],
+			[
+				0,
+				2,
+				1,
+				4
+			],
+			[
+				1,
+				3,
+				2,
+				4
 			]
 		],
 		"cols":
@@ -1247,6 +1555,8 @@
 		"rows":
 		[
 			0.0,
+			0.5,
+			0.5,
 			0.5,
 			1.0
 		]
@@ -1264,7 +1574,7 @@
 	"project": "yamct.sublime-project",
 	"replace":
 	{
-		"height": 48.0
+		"height": 44.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1273,6 +1583,14 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"mc.cuh",
+				"src/mc.cuh"
+			],
+			[
+				"otV",
+				"src/optVolume.h"
+			],
 			[
 				"STRU",
 				"GUI/src/structArgsIn.h"
@@ -1292,10 +1610,6 @@
 			[
 				"sta",
 				"GUI/src/structArgsIn.h"
-			],
-			[
-				"mc.cuh",
-				"GUI/src/mc.cuh"
 			],
 			[
 				"interf",

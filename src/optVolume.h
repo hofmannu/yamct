@@ -20,10 +20,14 @@
 #include <cinttypes>
 #include <cstdio>
 #include <math.h>
+#include <nlohmann/json.hpp>
 
 #include "sphere.h"
 #include "box.h"
 #include "tube.h"
+
+using nlohmann::json;
+using namespace std;
 
 class optVolume
 {
@@ -44,6 +48,10 @@ private:
 	uint32_t nElem = 0; // number of elements in matrix
 
 	float cross[3];
+
+	vector<sphere> spheres;
+	vector<box> boxes;
+	vector<tube> tubes;
 
 	void calc_dims(); // calculates dimensions and checks validity
 public:
@@ -78,13 +86,45 @@ public:
 	void set_cross(const uint8_t iDim, const float crossVal);
 
 	void alloc(); // allocates memory and fill up with background material
+	void generate_volume();
 
-	void addSphere(sphere* iSphere);
-	void addBox(box* iBox);
-	void addTube(tube* iTube);
+	// adds the shapes to our volume representation
+	void add_sphere(sphere* iSphere);
+	void add_box(box* iBox);
+	void add_tube(tube* iTube);
+
+
+	// add a new shape definition, do not assign to volume yet
+	void new_sphere();
+	void new_box();
+	void new_tube();
+
+	void delete_sphere(const uint8_t iSphere);
+	void delete_box(const uint8_t iBox);
+	void delete_tube(const uint8_t iTube);
+
+	// get actual geometrical objects back from vector
+	sphere get_sphere(const uint8_t iSphere) const {return spheres[iSphere];};
+	box get_box(const uint8_t iBox) const {return boxes[iBox];};
+	tube get_tube(const uint8_t iTube) const {return tubes[iTube];};
+
+	sphere* get_psphere(const uint8_t iSphere) {return &spheres[iSphere];};
+	box* get_pbox(const uint8_t iBox) {return &boxes[iBox];};
+	tube* get_ptube(const uint8_t iTube) {return &tubes[iTube];};
+
+	// set geometrical objects at a certain position
+	void set_sphere(const uint8_t iSphere, const sphere sphereObj);
+	void set_box(const uint8_t iBox, const box boxObj);
+	void set_tube(const uint8_t iTube, const tube tubeObj);
+
+	// get number of geometrical elements of each type
+	uint8_t get_nbox() const {return boxes.size();};
+	uint8_t get_ntube() const {return tubes.size();};
+	uint8_t get_nsphere() const {return spheres.size();};
 
 	float get_volume_voxel(); // returns the volume of each voxel [mm3]
-
+	json get_json(); // returns volume configuration
+	void read_json(const json jOpt); 
 
 };
 

@@ -1,8 +1,14 @@
 #include "box.h"
 
-void box::set_tType(const uint8_t _tType)
+void box::set_cornerA(const float _value, const uint8_t iDim)
 {
-	tType = _tType;
+	cornerA[iDim] = _value;
+	return;
+}
+
+void box::set_cornerB(const float _value, const uint8_t iDim)
+{
+	cornerB[iDim] = _value;
 	return;
 }
 
@@ -32,5 +38,3 @@ bool box::isContained(const float* pos)
 	
 	return isContained;
 }
-
-

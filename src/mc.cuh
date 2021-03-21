@@ -107,11 +107,8 @@ private:
 	void update_plots(const int32_t* idxPos);
 
 	bool flagDebug = 1; // give more debugging related output in terminal
-	bool flagKillBound = 1; // should we kill photon at boundaries
-
 	double simTime = 0; // tiome which was required for last simulation
 	bool isDone = 0; // flag showing if simulation is done
-
 	float photonRatio; // ratio of discovered photons in volume
 
 public:
@@ -144,7 +141,7 @@ public:
 	uint32_t get_dim(const uint8_t iDim) const {return dims[iDim];};
 	float get_minPos(const uint8_t iDim) const {return origin[iDim];};
 	float get_maxPos(const uint8_t iDim) const {return origin[iDim] + res[iDim] * ((float) dims[iDim]);};
-	bool get_flagKillBound() const {return flagKillBound;};
+	bool get_flagKillBound() const {return sim.get_flagKillBound();};
 	double get_simTime() const {return simTime;};
 	float get_photonRatio() const {return photonRatio;};
 
@@ -160,7 +157,7 @@ public:
 	float* get_paxVec(const uint64_t radIdx);
 	float* get_paxVec();
 
-	bool* get_pflagKillBound() {return &flagKillBound;};
+	bool* get_pflagKillBound() {return sim.get_pflagKillBound();};
 	// returns slice to given position along given dimension
 	float* get_slice(const uint8_t iDim, const float pos, const bool flagLog, const bool flagFluence);
 	float* get_plot(const uint8_t iDim, const float* pos, const bool flagLog, const bool flagFluence);

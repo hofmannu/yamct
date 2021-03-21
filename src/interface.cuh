@@ -97,11 +97,7 @@ private:
 	simProperties* simprop;
 
 	vector<optProperties>* tissueTypes; // vector containing different tissue types
-	vector<sphere> spheres;
-	vector<box> boxes;
-	vector<tube> tubes;
-	
-	optVolume* volume; // pointer will be stilen from sim
+	optVolume* volume; // pointer will be stolen from sim
 
 	// elements required for plotting of resulting fluence
 	color_mapper fluence_mapper;

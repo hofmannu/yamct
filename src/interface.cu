@@ -254,7 +254,7 @@ void interface::Properties()
 		ImGui::Text("n");
 	ImGui::NextColumn();
 
-	ImGui::Columns(2);
+	ImGui::Columns(1);
 
 	bool is_all_valid = (is_volume_generated && is_materials_defined &&
 		isGpuOk);
@@ -297,12 +297,21 @@ void interface::Properties()
     ImGui::PopStyleVar();
 	}
 
-	ImGui::NextColumn();
+	ImGui::Separator();
+	// option to save and load settings to a file
+
+	static char filePath [64];
+	ImGui::InputText("Settings path", filePath, 64);
+	string filePathString = filePath;
+
+	ImGui::Columns(2);
 
 	if (ImGui::Button("Save settings"))
-	{
-		sim.write_settings("/home/hofmannu/output.json");
-	}
+		sim.write_settings(filePath);
+	
+	ImGui::NextColumn();
+	if (ImGui::Button("Load settings"))
+		sim.read_settings(filePath);
 
 	ImGui::End();
 	return;
@@ -412,7 +421,6 @@ void interface::ImImagesc(
 void interface::TissueProperties()
 {
 	ImGui::Begin("Optical properties", &show_tissue_properties);
-
 	if (ImGui::Button("Add Type"))
 	{
 		optProperties newTissue;
@@ -447,8 +455,6 @@ void interface::TissueProperties()
 		ImGui::Separator();
 	}
 	ImGui::Columns(1);
-
-
 	ImGui::End();
 	return;
 }
@@ -477,25 +483,25 @@ void interface::FieldGenerator()
 	ImGui::NextColumn();
 	if (ImGui::Button("Add Sphere"))
 	{
-		sphere newSphere;
-		spheres.push_back(newSphere);
+		volume->new_sphere();
 	}
 	ImGui::NextColumn();
 
-	for (uint32_t iSphere = 0; iSphere < spheres.size(); iSphere++)
+	for (uint32_t iSphere = 0; iSphere < volume->get_nsphere(); iSphere++)
 	{
+		sphere* currSphere = volume->get_psphere(iSphere);
 		ImGui::PushID(iSphere);
-		ImGui::InputFloat("Radius [mm]", spheres[iSphere].get_pradius());
+		ImGui::InputFloat("Radius [mm]", currSphere->get_pradius());
 		ImGui::NextColumn();
-		int tType = spheres[iSphere].get_tType();
+		int tType = currSphere->get_tType();
 		ImGui::InputInt("Tissue type", &tType);
-		spheres[iSphere].set_tType(tType);
+		currSphere->set_tType(tType);
 		ImGui::NextColumn();
-		ImGui::InputFloat3("Center x/y/z [mm]", spheres[iSphere].get_pcenter());
+		ImGui::InputFloat3("Center x/y/z [mm]", currSphere->get_pcenter());
 		ImGui::NextColumn();
 		if (ImGui::Button("x"))
 		{
-			spheres.erase(spheres.begin() + iSphere);
+			volume->delete_sphere(iSphere);
 		}
 		ImGui::PopID();
 		ImGui::NextColumn();
@@ -506,25 +512,25 @@ void interface::FieldGenerator()
 	ImGui::NextColumn();
 	if (ImGui::Button("Add Box"))
 	{
-		box newBox;
-		boxes.push_back(newBox);
+		volume->new_box();
 	}
 	ImGui::NextColumn();
 
-	for (uint32_t iBox = 0; iBox < boxes.size(); iBox++)
+	for (uint32_t iBox = 0; iBox < volume->get_nbox(); iBox++)
 	{
+		box* currBox = volume->get_pbox(iBox);
 		ImGui::PushID(iBox + 255);
-		ImGui::InputFloat3("Corner A x/y/z [mm]", boxes[iBox].get_pcornerA());
+		ImGui::InputFloat3("Corner A x/y/z [mm]", currBox->get_pcornerA());
 		ImGui::NextColumn();
-		ImGui::InputFloat3("Corner B x/y/z [mm]", boxes[iBox].get_pcornerB());
+		ImGui::InputFloat3("Corner B x/y/z [mm]", currBox->get_pcornerB());
 		ImGui::NextColumn();
-		int tType = boxes[iBox].get_tType();
+		int tType = currBox->get_tType();
 		ImGui::InputInt("Tissue type", &tType);
-		boxes[iBox].set_tType(tType);
+		currBox->set_tType(tType);
 		ImGui::NextColumn();
 		if (ImGui::Button("x"))
 		{
-			boxes.erase(boxes.begin() + iBox);
+			volume->delete_box(iBox);
 		}
 		ImGui::PopID();
 		ImGui::NextColumn();
@@ -544,28 +550,28 @@ void interface::FieldGenerator()
 	ImGui::NextColumn();
 	if (ImGui::Button("Add Tube"))
 	{
-		tube newTube;
-		tubes.push_back(newTube);
+		volume->new_tube();
 	}
 	ImGui::NextColumn();
 
-	for (uint32_t iTube = 0; iTube < tubes.size(); iTube++)
+	for (uint32_t iTube = 0; iTube < volume->get_ntube(); iTube++)
 	{
+		tube* currTube = volume->get_ptube(iTube);
 		ImGui::Columns(2);
 		ImGui::PushID(iTube + 255 * 2);
-		ImGui::InputFloat3("Start pos A x/y/z [mm]", tubes[iTube].get_pstartPos());
+		ImGui::InputFloat3("Start pos A x/y/z [mm]", currTube->get_pstartPos());
 		ImGui::NextColumn();
-		ImGui::InputFloat3("Stop pos B x/y/z [mm]", tubes[iTube].get_pstopPos());
+		ImGui::InputFloat3("Stop pos B x/y/z [mm]", currTube->get_pstopPos());
 		ImGui::NextColumn();
-		ImGui::InputFloat2("Radius (inner, outer) [mm]", tubes[iTube].get_pradius());
+		ImGui::InputFloat2("Radius (inner, outer) [mm]", currTube->get_pradius());
 		ImGui::NextColumn();
-		int tType = tubes[iTube].get_tType();
+		int tType = currTube->get_tType();
 		ImGui::InputInt("Tissue type", &tType);
-		tubes[iTube].set_tType(tType);
+		currTube->set_tType(tType);
 		ImGui::SameLine();
 		if (ImGui::Button("x"))
 		{
-			tubes.erase(tubes.begin() + iTube);
+			volume->delete_tube(iTube);
 		}
 		ImGui::PopID();
 		ImGui::NextColumn();
@@ -578,39 +584,8 @@ void interface::FieldGenerator()
 	{
 		// allocate memory for volume here
 		volume->alloc();
+		volume->generate_volume();
 
-		for (uint8_t iPriority = 0; iPriority < 255; iPriority++)
-		{
-			// go through all shapes and check if they match this priority, if so push them to
-			// volume class
-			for (uint8_t iSphere = 0; iSphere < spheres.size(); iSphere++)
-			{
-				if (spheres[iSphere].get_priority() == iPriority)
-				{
-					printf("Adding a sphere\n");
-					volume->addSphere(&spheres[iSphere]);
-				}
-			}
-
-			for (uint8_t iBox = 0; iBox < boxes.size(); iBox++)
-			{
-				if (boxes[iBox].get_priority() == iPriority)
-				{
-					printf("Adding a box\n");
-					volume->addBox(&boxes[iBox]);
-				}
-			}
-
-			for (uint8_t iTube = 0; iTube < tubes.size(); iTube++)
-			{
-				if (tubes[iTube].get_priority() == iPriority)
-				{
-					printf("Adding a tube\n");
-					volume->addTube(&tubes[iTube]);
-				}
-			}
-
-		}
 
 		// update crosssections through our volume
 		for (uint8_t iDim = 0; iDim < 3; iDim++)
@@ -698,7 +673,6 @@ void interface::Result()
 
 	if (is_output_defined) // use logarithmic plot in this case
 	{
-
 		ImGui::Separator();
 
 		float* sliceX = sim.get_slice(0, xPos, flagLog, flagFluence);
@@ -722,13 +696,11 @@ void interface::Result()
 			maxVal = (flagLog == 1) ? sim.get_maxValLog() : sim.get_maxVal();
 			minVal = (flagLog == 1) ? sim.get_minValLog() : sim.get_minVal();
 		}
-		
 
 		ImGui::SliderFloat("MinVal", fluence_mapper.get_pminVal(), 
 			minVal, maxVal, "%.9f");
 		ImGui::SliderFloat("MaxVal", fluence_mapper.get_pmaxVal(), 
 			minVal, maxVal, "%.9f");
-
 
 		ImGui::ColorEdit4("Min color", fluence_mapper.get_pminCol(), ImGuiColorEditFlags_Float);
 		ImGui::ColorEdit4("Max color", fluence_mapper.get_pmaxCol(), ImGuiColorEditFlags_Float);
@@ -736,7 +708,6 @@ void interface::Result()
 		ImGui::SliderFloat("x pos", &xPos, sim.get_minPos(0), sim.get_maxPos(0), "%.2f");
 		ImGui::SliderFloat("y pos", &yPos, sim.get_minPos(1), sim.get_maxPos(1), "%.2f");
 		ImGui::SliderFloat("z pos", &zPos, sim.get_minPos(2), sim.get_maxPos(2), "%.2f");
-	
 
 		ImGui::Separator();	
 		float posXYZ [3] = {xPos, yPos, zPos};

@@ -1,3 +1,10 @@
+/*
+	class describing a simple spherical geometry
+	Author: Urs Hofmann
+	Mail: hofmannu@ethz.ch
+	Date: 19.03.2021
+*/
+
 #ifndef SPHERE_H
 #define SPHERE_H
 
@@ -24,7 +31,7 @@ public:
 	void set_radius(const float _radius); 
 	void set_center(const float _center, const uint8_t iDim);
 	
-
+	// reutrn true if vector pos is inside the sphere
 	bool isContained(const float* pos);
 };
 
