@@ -5,6 +5,10 @@ Here we go, yet another toolbox for light simulations in highly scattering media
 
 This is my attempt to build a Monte Carlo simulation toolbox featuring CUDA acceleration on NVIDIA cards, a friendly user interface based on the amazing `ImGui` project, handling multilayered tissues with elegance, geometry creation on the fly and directly from the GUI, combining multiple illuminations profiles in a single simulation, and export to datatypes readable from different software like Python, MATLAB, etc. through the established `h5` standard. The simulations are performed voxel by voxel relying on Code extensively tested on the CPU.
 
+## Import and Export of settings and datasets
+All settings are stored through the `json` file format which allows defining them through different interfaces and loading them into the GUI in a single click. Export of simulation datasets is available through `h5` or to `vtk` for alterantive displaying or postprocessing.
+
+## Documentation
 Documentation is lacking for now. Lazy programmers often say that an intuitive user interface does not require too much documentation.
 
 ![Main interface of YAMCT](https://hofmannu.org/wp-content/uploads/2020/12/yamct-1024x795.jpg "Main interface")
@@ -25,7 +29,12 @@ Libraries / pacakges required:
 
 Archlinux installation command
 ```
-pacman -S nlohman-json cuda nvidia hdf5 cmake make glfw-x11 glew
+pacman -S nlohmann-json cuda nvidia hdf5 cmake make glfw-x11 glew
+```
+
+Ubuntu installation command
+```
+apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils nlohmann-json-dev
 ```
 
 ## Building and running the program
@@ -47,10 +56,10 @@ I am actively working on this project. If you want any feature implemented (for 
 
 Things which are on my ToDo list include
 *  Different illumination types (e.g. gaussian beam)
-*  Saving and loading of simulation settings through json files
 *  Predefined tissue types to automatically load optical properties depending on used wavlenght
-*  Export to different file types
-*  Testing for Windows
+*  Export to different file types including `mat`
+*  Testing for Windows and Ubuntu
+*  Documentation for settings defined in `json` file
 
 # Similar / alternative projects
 *  [OMLC website with examples and explanations](https://omlc.org/software/mc/)
