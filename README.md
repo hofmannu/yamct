@@ -25,7 +25,12 @@ Libraries / pacakges required:
 
 Archlinux installation command
 ```
-pacman -S nlohman-json cuda nvidia hdf5 cmake make glfw-x11 glew
+pacman -S nlohmann-json cuda nvidia hdf5 cmake make glfw-x11 glew
+```
+
+Ubuntu installation command
+```
+apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils nlohmann-json-dev
 ```
 
 ## Building and running the program
