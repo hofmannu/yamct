@@ -38,7 +38,7 @@ apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils n
 ```
 
 ## Building and running the program
-This software is writtent for Linux and requires furthermore CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
+This software is written for Linux and requires CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
 
 ```
 git clone git@github.com:hofmannu/yamct.git
