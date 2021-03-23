@@ -34,7 +34,7 @@ pacman -S nlohmann-json cuda nvidia hdf5 cmake make glfw-x11 glew
 
 Ubuntu installation command
 ```
-apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils nlohmann-json-dev
+apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils nlohmann-json3-dev
 ```
 
 ## Building and running the program
