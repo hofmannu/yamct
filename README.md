@@ -34,8 +34,10 @@ pacman -S nlohmann-json cuda nvidia hdf5 cmake make glfw-x11 glew
 
 Ubuntu installation command
 ```
-apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3 glew-utils nlohmann-json3-dev
+apt-get install libhdf5-dev nvidia-cuda-toolkit cmake make libglfw3-dev libglfw3-dev libglew-dev nlohmann-json3-dev libsdl2-dev git g++
 ```
+
+On Ubuntu there is still a problem with the hdf5 library. I am working on it.
 
 ## Building and running the program
 This software is written for Linux and requires CUDA. Switch on the terminal, `cd` to your favorite installation directory and run the following command cascade:
