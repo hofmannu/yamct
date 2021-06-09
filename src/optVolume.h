@@ -22,9 +22,9 @@
 #include <math.h>
 #include <nlohmann/json.hpp>
 
-#include "sphere.h"
-#include "box.h"
-#include "tube.h"
+#include "shapes/sphere.h"
+#include "shapes/box.h"
+#include "shapes/tube.h"
 
 using nlohmann::json;
 using namespace std;

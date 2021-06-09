@@ -14,6 +14,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
 set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true --ptxas-options=-v -O2")
 
+add_subdirectory(shapes)
+
 find_package(nlohmann_json 3.2.0 REQUIRED)
 
 find_library(H5CPP_LIB hdf5_cpp)
@@ -49,34 +51,6 @@ set_property(TARGET ColorMapper PROPERTY CUDA_ARCHITECTURES 50 75 86)
 
 add_library(OptVolume optVolume.cpp)
 set_property(TARGET OptVolume PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-
-add_library(Sphere sphere.cpp)
-set_property(TARGET Sphere PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(Sphere PUBLIC
-	Shape
-	)
-
-add_library(Box box.cpp)
-set_property(TARGET Box PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(Box PUBLIC
-	Shape
-	)
-
-add_library(Shell shell.cpp)
-set_property(TARGET Shell PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(Shell PUBLIC
-	Shape
-	)
-
-add_library(Tube tube.cpp)
-set_property(TARGET Tube PROPERTY CUDA_SEPARABLE_COMPILATION ON)
-target_link_libraries(Tube PUBLIC
-	Shape
-	)
-
-
-add_library(Shape shape.cpp)
-set_property(TARGET Shape PROPERTY CUDA_SEPARABLE_COMPILATION ON)
 
 add_library(Interface interface.cu)
 set_property(TARGET Interface PROPERTY CUDA_SEPARABLE_COMPILATION ON)

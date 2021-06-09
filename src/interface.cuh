@@ -37,9 +37,9 @@
 
 // different geometrical shapes
 #include "optVolume.h"
-#include "sphere.h"
-#include "box.h"	
-#include "tube.h"
+#include "shapes/sphere.h"
+#include "shapes/box.h"	
+#include "shapes/tube.h"
 
 using namespace std;
 
