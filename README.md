@@ -52,6 +52,12 @@ cd Debug
 cmake .. && make all && ./main_exp
 ```
 
+Building in debugging mode
+```
+cmake -DCMAKE_BUILD_TYPE=Debug .. && make all && gdb main_exp
+```
+Make sure you have `gdb` installed.
+
 # Support and ongoing development
 
 I am actively working on this project. If you want any feature implemented (for example different geometrical shapes, export types, or illumination types) feel free to open an issue and I will get back to you as soon as possible.

@@ -28,7 +28,7 @@ set(
 add_subdirectory(src/)
 add_subdirectory(lib/)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 set(OpenGL_GL_PREFERENCE GLVND)
 cmake_policy(SET CMP0079 NEW)

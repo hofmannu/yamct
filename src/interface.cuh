@@ -17,11 +17,19 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
+// libraries required for plotting
 #include <SDL2/SDL.h>
 #include <GL/glew.h>    // Initialize with gl3wInit()
 
 #include <thread> 
+#include <cstdio>
+#include <iostream>
+#include <fstream>
+#include <cstdint>
+// #include <experimental/filesystem>
+#include <boost/filesystem.hpp>
 
+// selfdefined libraries
 #include "../lib/imgui/imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
@@ -32,7 +40,6 @@
 #include "mcFieldProperties.h"
 #include "optProperties.h"
 #include "simProperties.h"
-#include <cstdio>
 #include "color_mapper.cuh"
 
 // different geometrical shapes
@@ -69,7 +76,6 @@ private:
 	const char* windowTitle = "YAMCT";
 	// ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 0.10f);
 	ImVec4 clear_color = ImVec4(0.60f, 0.55f, 0.45f, 0.10f);
-
 
 	bool show_properties_window = 1;
 	bool show_tissue_properties = 1;

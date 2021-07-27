@@ -14,6 +14,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true -ftz=false -prec-div=true -prec-sqrt=true")
 set(CMAKE_CUDA_FLAGS "${CUDA_CUDA_FLAGS} -rdc=true --ptxas-options=-v -O2")
 
+find_package(Boost 1.40 COMPONENTS filesystem REQUIRED )
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+link_directories(${Boost_LIBRARY_DIR})
+
 add_subdirectory(shapes)
 
 find_package(nlohmann_json 3.2.0 REQUIRED)
@@ -72,6 +76,7 @@ target_link_libraries(Interface PUBLIC
 	Box
 	Shell
 	Tube
+	${Boost_LIBRARIES}
 	)
 
 add_library(ImGuiFileDialog ImGuiFileDialog.cpp)

@@ -4,8 +4,6 @@
 	Author: Urs Hofmann
 	Mail: hofmannu@ethz.ch
 	Date: 04.11.2020
-
-
 */
 
 #ifndef FIBERPROPERTIES_H

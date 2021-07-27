@@ -294,7 +294,7 @@ void interface::Properties()
 	if (!is_all_valid)
 	{
 		ImGui::PopItemFlag();
-    ImGui::PopStyleVar();
+    	ImGui::PopStyleVar();
 	}
 
 	ImGui::Separator();
@@ -311,7 +311,26 @@ void interface::Properties()
 	
 	ImGui::NextColumn();
 	if (ImGui::Button("Load settings"))
-		sim.read_settings(filePath);
+	{
+		// if path is pointing to a file, do the reading, otherwise throw a warning 
+		if (boost::filesystem::exists(filePath))
+		{
+			sim.read_settings(filePath);
+		}
+		else
+		{
+			printf("path is not pointing to a file, gonna ignore request\n");
+			ImGui::OpenPopup("Path not pointing to file");	
+		}
+	}
+
+	if (ImGui::BeginPopupModal("Path not pointing to file"))
+	{
+		ImGui::Text("Path is not pointing to a file");
+	    if (ImGui::Button("Close"))
+	    	ImGui::CloseCurrentPopup();
+	    ImGui::EndPopup();
+	}
 
 	ImGui::End();
 	return;
@@ -748,20 +767,7 @@ void interface::Result()
 		delete[] plotVecF;
 
 	}
-	// // plot radial crossection
-	// ImGui::PlotConfig conf;
-	// // conf.values.xs = model->get_ptImp(); // this line is optional
-	// conf.values.ys = model->get_pimpResp();
-	// conf.values.count = model->getNElem();
-	// conf.scale.min = -1;
-	// conf.scale.max = 1;
-	// conf.tooltip.show = true;
-	// conf.tooltip.format = "x=%.2f, y=%.2f";
-	// conf.grid_x.show = true;
-	// conf.grid_y.show = true;
-	// conf.frame_size = ImVec2(width, 200);
-	// conf.line_thickness = 2.f;
-	// ImGui::Plot("plot", conf);
+
 
 	static char filePath [64];
 	ImGui::InputText("Path", filePath, 64);
